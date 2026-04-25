@@ -24,6 +24,7 @@ export default function OpeningSequence() {
   const currentFrameRef = useRef(1);
 
   const [phase, setPhase] = useState<Phase>("loading");
+  const [loadedCount, setLoadedCount] = useState(0);
   const [hintVisible, setHintVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -50,6 +51,7 @@ export default function OpeningSequence() {
     const onSettled = () => {
       if (cancelled) return;
       count += 1;
+      setLoadedCount(count);
       if (count === FRAME_COUNT) setPhase("playing");
     };
 
@@ -198,6 +200,37 @@ export default function OpeningSequence() {
             className="absolute inset-0 h-full w-full"
             aria-label="Opening sequence"
           />
+
+          <AnimatePresence>
+            {phase === "loading" && (
+              <motion.div
+                key="loading-indicator"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4"
+              >
+                <span
+                  className="font-serif tabular-nums text-gray-900/80 text-4xl sm:text-5xl tracking-wider"
+                  aria-live="polite"
+                >
+                  {String(
+                    Math.floor((loadedCount / FRAME_COUNT) * 100)
+                  ).padStart(2, "0")}
+                </span>
+                <div className="relative h-px w-32 sm:w-40 overflow-hidden bg-gray-900/15">
+                  <motion.div
+                    className="absolute inset-y-0 left-0 bg-gray-900/60"
+                    animate={{
+                      width: `${(loadedCount / FRAME_COUNT) * 100}%`,
+                    }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <AnimatePresence>
             {hintVisible && (
