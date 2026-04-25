@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(node -e ' *)",
+      "Bash(npx next *)",
+      "Bash(npx eslint *)",
+      "Bash(echo \"exit=$?\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Mr Dashi\\Downloads\\blessings_wedding\\curtain_frames"
+    ]
+  }
+}
