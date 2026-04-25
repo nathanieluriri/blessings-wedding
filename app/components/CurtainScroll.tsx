@@ -171,15 +171,17 @@ export default function CurtainScroll() {
       className="relative w-full h-[450vh]"
       aria-label="Wedding invitation scrollytelling"
     >
-      <motion.div
-        style={{ opacity: heroOpacity, scale: heroScale }}
-        className="sticky top-0 h-screen w-full overflow-hidden bg-white will-change-[opacity,transform]"
-      >
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 h-full w-full"
-          aria-hidden="true"
-        />
+      <div className="sticky top-0 h-screen w-full overflow-hidden bg-black">
+        <motion.div
+          style={{ opacity: heroOpacity, scale: heroScale }}
+          className="absolute inset-0 will-change-[opacity,transform]"
+        >
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 h-full w-full"
+            aria-hidden="true"
+          />
+        </motion.div>
 
         <motion.div
           style={{ opacity: textOpacity, y: textY, filter: textFilter }}
@@ -217,7 +219,7 @@ export default function CurtainScroll() {
             </p>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }

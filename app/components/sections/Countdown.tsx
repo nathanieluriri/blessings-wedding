@@ -59,12 +59,15 @@ function CountBox({
   );
 }
 
+const ZERO_PARTS: Parts = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
 export default function Countdown() {
-  const [parts, setParts] = useState<Parts>(() => getParts(Date.now()));
+  const [parts, setParts] = useState<Parts>(ZERO_PARTS);
 
   useEffect(() => {
     let raf = 0;
     let lastSecond = -1;
+    setParts(getParts(Date.now()));
     const tick = () => {
       const now = Date.now();
       const sec = Math.floor(now / 1000);
