@@ -9,6 +9,7 @@ type SectionShellProps = {
   className?: string;
   innerClassName?: string;
   motionProps?: HTMLMotionProps<"div">;
+  centerInViewport?: boolean;
 };
 
 export default function SectionShell({
@@ -17,18 +18,25 @@ export default function SectionShell({
   className = "",
   innerClassName = "",
   motionProps,
+  centerInViewport = false,
 }: SectionShellProps) {
+  const padding = centerInViewport
+    ? "py-16 sm:py-20"
+    : "py-24 sm:py-28 md:py-32";
+  const layout = centerInViewport
+    ? "min-h-screen flex flex-col justify-center"
+    : "";
   return (
     <section
       id={id}
-      className={`relative w-full px-6 py-24 sm:py-28 md:py-32 ${className}`}
+      className={`relative w-full px-6 ${padding} ${layout} ${className}`}
     >
       <motion.div
         initial={{ opacity: 0, y: 36 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-15% 0px" }}
         transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
-        className={`mx-auto max-w-5xl ${innerClassName}`}
+        className={`mx-auto w-full max-w-5xl ${innerClassName}`}
         {...motionProps}
       >
         {children}

@@ -1,15 +1,15 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 const FRAME_COUNT = 300;
 const FRAME_PATH = "/curtain_frames";
 const CURTAIN_END = 0.78;
-const TEXT_FADE_START = 0.40;
-const TEXT_FADE_END = 0.78;
-const HERO_FADE_START = 0.90;
-const HERO_FADE_END = 1.0;
+const TEXT_FADE_START = 0.42;
+const TEXT_FADE_END = 0.82;
+const HERO_FADE_START = 0.30;
+const HERO_FADE_END = 0.78;
 
 const frameSrc = (i: number) =>
   `${FRAME_PATH}/ezgif-frame-${String(i).padStart(3, "0")}.jpg`;
@@ -23,51 +23,70 @@ export default function CurtainScroll() {
 
   const [isReady, setIsReady] = useState(false);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
+  const progress = useMotionValue(0);
+
+  useEffect(() => {
+    const update = () => {
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const distance = Math.max(1, rect.height - viewportHeight);
+      const scrolled = -rect.top;
+      const p = Math.max(0, Math.min(1, scrolled / distance));
+      progress.set(p);
+    };
+
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+
+    let raf = 0;
+    const loop = () => {
+      update();
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [progress]);
 
   const frameIndex = useTransform(
-    scrollYProgress,
+    progress,
     [0, CURTAIN_END, 1],
     [1, FRAME_COUNT, FRAME_COUNT],
     { clamp: true },
   );
 
   const textOpacity = useTransform(
-    scrollYProgress,
+    progress,
     [TEXT_FADE_START, TEXT_FADE_END],
     [0, 1],
     { clamp: true },
   );
 
   const textY = useTransform(
-    scrollYProgress,
+    progress,
     [TEXT_FADE_START, TEXT_FADE_END],
-    [40, 0],
+    [18, 0],
     { clamp: true },
   );
 
-  const textBlur = useTransform(
-    scrollYProgress,
+  const textScale = useTransform(
+    progress,
     [TEXT_FADE_START, TEXT_FADE_END],
-    [10, 0],
+    [0.84, 1],
     { clamp: true },
   );
-  const textFilter = useTransform(textBlur, (v) => `blur(${v}px)`);
 
   const heroOpacity = useTransform(
-    scrollYProgress,
+    progress,
     [HERO_FADE_START, HERO_FADE_END],
     [1, 0],
-    { clamp: true },
-  );
-
-  const heroScale = useTransform(
-    scrollYProgress,
-    [HERO_FADE_START, HERO_FADE_END],
-    [1, 1.04],
     { clamp: true },
   );
 
@@ -171,10 +190,10 @@ export default function CurtainScroll() {
       className="relative w-full h-[450vh]"
       aria-label="Wedding invitation scrollytelling"
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden bg-black">
+      <div className="sticky top-0 h-screen w-full overflow-hidden bg-white">
         <motion.div
-          style={{ opacity: heroOpacity, scale: heroScale }}
-          className="absolute inset-0 will-change-[opacity,transform]"
+          style={{ opacity: heroOpacity }}
+          className="absolute inset-0 will-change-[opacity]"
         >
           <canvas
             ref={canvasRef}
@@ -184,35 +203,32 @@ export default function CurtainScroll() {
         </motion.div>
 
         <motion.div
-          style={{ opacity: textOpacity, y: textY, filter: textFilter }}
-          className="absolute inset-0 z-10 flex items-center justify-center px-6 pointer-events-none"
+          style={{ opacity: textOpacity, scale: textScale, y: textY }}
+          className="absolute inset-0 z-10 flex items-center justify-center px-6 pointer-events-none will-change-[opacity,transform]"
         >
-          <div
-            className="invitation-float text-center max-w-[90vw] sm:max-w-xl md:max-w-2xl"
-            style={{ textShadow: "0 2px 24px rgba(0, 0, 0, 0.55)" }}
-          >
-            <p className="font-sans text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.45em] text-white/75 mb-8 sm:mb-10">
+          <div className="invitation-float text-center max-w-[90vw] sm:max-w-xl md:max-w-2xl">
+            <p className="font-sans text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.45em] text-gray-500 mb-8 sm:mb-10">
               You are cordially invited to celebrate the wedding of
             </p>
 
             <div className="flex flex-col items-center gap-2 sm:gap-3 leading-none">
-              <h1 className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-white tracking-tight">
+              <h1 className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-gray-900 tracking-tight">
                 Blessing
               </h1>
               <span
                 aria-hidden="true"
-                className="font-serif italic text-4xl sm:text-5xl md:text-6xl text-white/85 -my-1 sm:-my-2"
+                className="font-serif italic text-4xl sm:text-5xl md:text-6xl text-gray-700 -my-1 sm:-my-2"
               >
                 &amp;
               </span>
-              <h1 className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-white tracking-tight">
+              <h1 className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-gray-900 tracking-tight">
                 Justice
               </h1>
             </div>
 
-            <div className="mx-auto mt-10 sm:mt-12 h-px w-16 bg-white/45" />
+            <div className="mx-auto mt-10 sm:mt-12 h-px w-16 bg-gray-300" />
 
-            <p className="mt-8 sm:mt-10 font-serif text-base sm:text-lg md:text-xl leading-relaxed text-white/85 max-w-md mx-auto">
+            <p className="mt-8 sm:mt-10 font-serif text-base sm:text-lg md:text-xl leading-relaxed text-gray-700 max-w-md mx-auto">
               We would like to invite you to celebrate with us the most
               special day of our lives. It would be an honor to have you
               present at this important moment.

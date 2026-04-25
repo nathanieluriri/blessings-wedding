@@ -2,6 +2,7 @@
 
 import { ReactLenis } from "lenis/react";
 import type { ReactNode } from "react";
+import { ScrollLockProvider } from "./ScrollLock";
 
 type SmoothScrollProps = {
   children: ReactNode;
@@ -22,7 +23,7 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       }}
     >
-      {children}
+      <ScrollLockProvider>{children}</ScrollLockProvider>
     </ReactLenis>
   );
 }

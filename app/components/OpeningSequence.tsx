@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { useScrollLock } from "./ScrollLock";
 
 const FRAME_COUNT = 240;
 const FRAME_PATH = "/opening_frames";
@@ -9,6 +10,7 @@ const TARGET_FPS = 30;
 const FRAME_INTERVAL_MS = 1000 / TARGET_FPS;
 const LETTERBOX_COLOR = "#f7f0e6";
 const HINT_DELAY_MS = 600;
+const MAX_FRAME_WIDTH = 1200;
 
 const frameSrc = (i: number) =>
   `${FRAME_PATH}/ezgif-frame-${String(i).padStart(3, "0")}.jpg`;
@@ -24,6 +26,21 @@ export default function OpeningSequence() {
   const [phase, setPhase] = useState<Phase>("loading");
   const [hintVisible, setHintVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+
+  useScrollLock("opening-sequence", !dismissed);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    if (phase !== "settled") return;
+    window.scrollTo(0, 0);
+  }, [phase]);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,15 +69,6 @@ export default function OpeningSequence() {
   }, []);
 
   useEffect(() => {
-    if (dismissed) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [dismissed]);
-
-  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: false });
@@ -81,11 +89,13 @@ export default function OpeningSequence() {
       if (!img || !img.complete || !img.naturalWidth) return;
       const iw = img.naturalWidth;
       const ih = img.naturalHeight;
-      const scale = Math.min(cw / iw, ch / ih);
+      const fitScale = Math.min(cw / iw, ch / ih);
+      const maxWidthScale = MAX_FRAME_WIDTH / iw;
+      const scale = Math.min(fitScale, maxWidthScale);
       const drawW = iw * scale;
       const drawH = ih * scale;
-      const dx = (cw - drawW) / 2;
-      const dy = (ch - drawH) / 2;
+      const dx = Math.round((cw - drawW) / 2);
+      const dy = Math.round((ch - drawH) / 2);
       ctx.drawImage(img, dx, dy, drawW, drawH);
     };
 

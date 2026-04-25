@@ -67,7 +67,6 @@ export default function Countdown() {
   useEffect(() => {
     let raf = 0;
     let lastSecond = -1;
-    setParts(getParts(Date.now()));
     const tick = () => {
       const now = Date.now();
       const sec = Math.floor(now / 1000);

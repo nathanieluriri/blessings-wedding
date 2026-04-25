@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useLenis } from "lenis/react";
 import {
   useCallback,
   useEffect,
@@ -8,6 +9,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { useScrollLock } from "../ScrollLock";
 import SectionShell, {
   SectionDivider,
   SectionEyebrow,
@@ -304,19 +306,107 @@ function ConfettiBurst({ active }: { active: boolean }) {
   return <ConfettiPieces />;
 }
 
+type Phase = "idle" | "engaged" | "complete";
+
 export default function ScratchReveal() {
   const [revealedCount, setRevealedCount] = useState(0);
+  const [phase, setPhase] = useState<Phase>("idle");
   const allRevealed = revealedCount >= CARDS.length;
+  const lenis = useLenis();
+  const sectionRef = useRef<HTMLElement | null>(null);
 
   const handleReveal = useCallback(() => {
     setRevealedCount((n) => Math.min(CARDS.length, n + 1));
   }, []);
+
+  useScrollLock("scratch-reveal", phase === "engaged");
+
+  useEffect(() => {
+    if (phase !== "idle") return;
+    const sectionEl = document.getElementById("reveal");
+    if (!sectionEl) return;
+    sectionRef.current = sectionEl;
+
+    let armed = true;
+    let safety: number | undefined;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (!armed) return;
+        const entry = entries[0];
+        if (!entry.isIntersecting) return;
+        armed = false;
+        const engage = () => setPhase("engaged");
+        if (lenis) {
+          lenis.scrollTo(sectionEl, {
+            duration: 0.85,
+            lock: true,
+            onComplete: engage,
+          });
+          safety = window.setTimeout(engage, 1100);
+        } else {
+          sectionEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          safety = window.setTimeout(engage, 700);
+        }
+      },
+      {
+        threshold: 0,
+        rootMargin: "-50% 0px -50% 0px",
+      },
+    );
+    obs.observe(sectionEl);
+    return () => {
+      obs.disconnect();
+      if (safety !== undefined) window.clearTimeout(safety);
+    };
+  }, [phase, lenis]);
+
+  useEffect(() => {
+    if (phase !== "engaged") return;
+    const sectionEl = sectionRef.current ?? document.getElementById("reveal");
+    if (!sectionEl) return;
+
+    let suppressUntil = performance.now() + 950;
+    let snapTimer: number | undefined;
+
+    const onScroll = () => {
+      if (performance.now() < suppressUntil) return;
+      if (snapTimer !== undefined) window.clearTimeout(snapTimer);
+      snapTimer = window.setTimeout(() => {
+        const offset = sectionEl.getBoundingClientRect().top;
+        if (Math.abs(offset) > 60) {
+          suppressUntil = performance.now() + 700;
+          if (lenis) {
+            lenis.scrollTo(sectionEl, {
+              duration: 0.55,
+              force: true,
+              lock: true,
+            });
+          } else {
+            sectionEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }
+      }, 90);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (snapTimer !== undefined) window.clearTimeout(snapTimer);
+    };
+  }, [phase, lenis]);
+
+  useEffect(() => {
+    if (!allRevealed || phase !== "engaged") return;
+    const t = window.setTimeout(() => setPhase("complete"), 4500);
+    return () => window.clearTimeout(t);
+  }, [allRevealed, phase]);
 
   return (
     <SectionShell
       id="reveal"
       className="bg-[color:var(--cream-deep)] overflow-hidden"
       innerClassName="text-center"
+      centerInViewport
     >
       <ConfettiBurst active={allRevealed} />
 
@@ -336,7 +426,9 @@ export default function ScratchReveal() {
           ✋
         </span>
         <span className="font-serif italic text-sm text-[color:var(--burgundy-soft)]/80">
-          Scratch all three circles to continue
+          {phase === "complete"
+            ? "Beautiful — keep scrolling"
+            : "Scratch all three circles to continue"}
         </span>
       </motion.div>
 
