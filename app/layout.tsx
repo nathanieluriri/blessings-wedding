@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter, Playfair_Display, Fraunces } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "./components/SmoothScroll";
 
@@ -7,6 +7,15 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+// Editorial serif used by the opening sequence (counter / %).
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
   style: ["normal", "italic"],
   display: "swap",
 });
@@ -190,7 +199,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${inter.variable} antialiased`}
+      className={`${playfair.variable} ${inter.variable} ${fraunces.variable} antialiased`}
     >
       <body className="bg-white text-gray-900" suppressHydrationWarning>
         <SmoothScroll>{children}</SmoothScroll>

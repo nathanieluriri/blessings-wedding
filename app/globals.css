@@ -194,28 +194,278 @@ html.lenis body {
   pointer-events: none;
 }
 
-/* Monogram "ghost outline + tracing pen", outlines only.
-   Two layers share the same paths (each with pathLength="1" so the dash math
-   is normalized 0..1 regardless of real length or render size):
-     .monogram-ghost  faint full outline, visible from the start (the guide)
-     .monogram-trace  brighter line whose stroke-dashoffset is driven in JS,
-                       from 1 (hidden) to 0 (fully drawn), in lockstep with
-                       the counter so 100 lands exactly as the trace completes. */
+/* ========== Opening intro + editorial hero ==========
+   The hero section is in normal flow (the page's real hero). The preloader and
+   the expanding photo are FIXED overlays that cover it during the intro, then
+   fade out to reveal it — wedding image 4 ends as the hero background, with the
+   headline overlaid on top. */
+
+.intro-hero {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--cream);
+  color: #fff;
+}
+.intro-hero-bg,
+.intro-hero-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.intro-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 18, 16, 0.38),
+    rgba(18, 18, 16, 0.06) 32%,
+    rgba(18, 18, 16, 0.22) 70%,
+    rgba(18, 18, 16, 0.58)
+  );
+}
+
+.intro-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(18px, 3vw, 30px) clamp(20px, 4vw, 46px);
+}
+.intro-wordmark {
+  font-family: var(--font-fraunces), serif;
+  font-weight: 500;
+  letter-spacing: 0.42em;
+  font-size: clamp(14px, 1.9vw, 21px);
+  padding-left: 0.42em;
+}
+.intro-burger {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 30px;
+}
+.intro-burger i {
+  height: 1.5px;
+  background: #fff;
+  display: block;
+  width: 100%;
+}
+.intro-burger i:last-child {
+  width: 64%;
+  margin-left: auto;
+}
+
+.intro-headline {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+.intro-word {
+  position: absolute;
+  font-family: var(--font-fraunces), serif;
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+}
+.intro-word span {
+  display: inline-block;
+}
+.intro-w1 {
+  top: 15%;
+  left: 7%;
+  font-size: clamp(46px, 11vw, 128px);
+}
+.intro-w2 {
+  top: 31%;
+  left: 6%;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(38px, 9vw, 104px);
+}
+.intro-w3 {
+  bottom: 31%;
+  right: 7%;
+  font-size: clamp(40px, 9.5vw, 110px);
+}
+.intro-w4 {
+  bottom: 17%;
+  right: 8%;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(20px, 3.6vw, 40px);
+  letter-spacing: 0.04em;
+}
+
+.intro-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(20px, 4vw, 46px);
+}
+.intro-sub {
+  max-width: min(90vw, 440px);
+  font-family: var(--font-fraunces), serif;
+  font-size: clamp(15px, 1.7vw, 19px);
+  line-height: 1.45;
+}
+.intro-cta {
+  flex: none;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: #fff;
+  background: transparent;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.3s, color 0.3s;
+}
+.intro-cta:hover {
+  background: #fff;
+  color: var(--burgundy);
+}
+@media (max-width: 560px) {
+  .intro-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .intro-sub {
+    max-width: 100%;
+  }
+}
+
+/* ---- fixed intro overlays (preloader + expanding photo) ---- */
+.intro-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--cream);
+  display: flex;
+  flex-direction: column; /* phones: number / monogram / % stacked */
+  align-items: center;
+  justify-content: center;
+  gap: clamp(28px, 6vh, 70px);
+}
+/* wider screens: number (left) · monogram (center) · % (right) */
+@media (min-width: 768px) {
+  .intro-preloader {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    justify-items: center;
+    gap: 0;
+    padding: 0 clamp(48px, 9vw, 150px);
+  }
+  .intro-counter {
+    justify-self: start;
+  }
+  .intro-pct {
+    justify-self: end;
+  }
+}
+.intro-counter {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  font-family: var(--font-fraunces), "Playfair Display", serif;
+  font-weight: 400;
+  font-size: clamp(34px, 6vw, 58px);
+  line-height: 1;
+  color: var(--foreground);
+  letter-spacing: 0.01em;
+}
+.intro-reel {
+  height: 1em;
+  overflow: hidden;
+  display: inline-block;
+}
+.intro-reel-track {
+  display: flex;
+  flex-direction: column;
+}
+.intro-reel-track span {
+  height: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+.intro-mark {
+  width: clamp(240px, 34vw, 460px);
+  color: var(--burgundy);
+}
+.intro-pct {
+  font-family: var(--font-fraunces), "Playfair Display", serif;
+  font-weight: 400;
+  font-size: clamp(20px, 3.4vw, 30px);
+  font-style: italic;
+  color: var(--foreground);
+}
+.intro-reveal-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  /* keep the loader background while the photos scale in (not the dark hero) */
+  background: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.intro-frame {
+  position: relative;
+  background: var(--cream);
+  width: min(46vw, 260px);
+  height: min(64vh, 360px);
+  will-change: width, height;
+}
+.intro-frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  box-sizing: border-box;
+  /* cream stroke (same as the backdrop) so overlapping photos stay distinct */
+  border: clamp(5px, 0.8vw, 14px) solid var(--cream);
+  will-change: transform, opacity;
+}
+
+/* Monogram "ghost outline + tracing pen", outlines only (uses currentColor so
+   the preloader controls the ink). Each path has pathLength="1" so the dash math
+   is normalized 0..1; .monogram-trace's stroke-dashoffset is driven in JS from
+   1 (hidden) to 0 (drawn), in lockstep with the counter. */
 .monogram-ghost,
 .monogram-trace {
   fill: none;
-  stroke: var(--burgundy);
+  stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
-  /* keep the hairline crisp and constant no matter how the SVG is scaled */
   vector-effect: non-scaling-stroke;
 }
-
 .monogram-ghost {
   opacity: 0.16;
   stroke-width: 1.3;
 }
-
 .monogram-trace {
   stroke-width: 1.9;
   stroke-dasharray: 1;
@@ -234,4 +484,102 @@ html.lenis body {
 
 .hashtag-glow {
   animation: hashtagGlow 4.5s ease-in-out infinite;
+}
+
+/* ---- Hashtag & Dress-code illustrations ----
+   Both are full-colour line illustrations rendered inline (HashtagScene /
+   DressCodeScene). The framer-motion wrapper handles the scroll-in reveal; once
+   settled, a slow drift/breathe keeps the artwork feeling alive without pulling
+   focus. drop-shadow softens the artwork against the cream background. */
+@keyframes artFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes artBreathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.012);
+  }
+}
+
+.hashtag-art {
+  animation: artFloat 7s ease-in-out infinite;
+  filter: drop-shadow(0 18px 30px rgba(114, 47, 55, 0.14));
+  will-change: transform;
+}
+
+.dresscode-art {
+  animation: artBreathe 9s ease-in-out infinite;
+  transform-origin: center;
+  filter: drop-shadow(0 22px 38px rgba(0, 0, 0, 0.12));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hashtag-art,
+  .dresscode-art {
+    animation: none;
+  }
+}
+
+/* ---- Venue scene: gently drifting clouds ----
+   Each cloud cluster in VenueScene is wrapped in <g class="vcloud vcloud-*">.
+   The drift is a slow side-to-side sway (in SVG user units) rather than a one-
+   way pan, so clouds never wander off the canvas. Amplitude/duration/phase vary
+   per cluster so they don't move in lockstep. The transform composes on top of
+   each path's own translate(), so the clouds stay perfectly in place at rest. */
+@keyframes cloudDrift {
+  0%,
+  100% {
+    transform: translateX(calc(var(--drift) * -1));
+  }
+  50% {
+    transform: translateX(var(--drift));
+  }
+}
+
+.vcloud {
+  animation: cloudDrift var(--dur, 26s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform;
+}
+.vcloud-a {
+  --drift: 30px;
+  --dur: 30s;
+  --delay: 0s;
+}
+.vcloud-b {
+  --drift: -20px;
+  --dur: 23s;
+  --delay: -7s;
+}
+.vcloud-c {
+  --drift: 38px;
+  --dur: 35s;
+  --delay: -13s;
+}
+.vcloud-d {
+  --drift: -26px;
+  --dur: 27s;
+  --delay: -4s;
+}
+.vcloud-e {
+  --drift: 22px;
+  --dur: 20s;
+  --delay: -10s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vcloud {
+    animation: none;
+  }
 }

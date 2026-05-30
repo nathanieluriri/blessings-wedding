@@ -63,10 +63,10 @@ function ScratchCard({ label, aria, delay, onReveal }: ScratchCardProps) {
       s * 0.5,
       s * 0.62,
     );
-    grad.addColorStop(0, "#fbe9b1");
-    grad.addColorStop(0.45, "#d6a955");
-    grad.addColorStop(0.85, "#a37837");
-    grad.addColorStop(1, "#6e4f24");
+    grad.addColorStop(0, "#ffeccb");
+    grad.addColorStop(0.4, "#eeb87f");
+    grad.addColorStop(0.8, "#cf8d62");
+    grad.addColorStop(1, "#9c5f3e");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, s, s);
 
@@ -209,48 +209,56 @@ function ScratchCard({ label, aria, delay, onReveal }: ScratchCardProps) {
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-10% 0px" }}
       transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
-      className="relative rounded-full overflow-hidden bg-white shadow-[0_18px_50px_-22px_rgba(90,26,26,0.45)] border border-white"
+      className="relative"
       style={{
         width: "clamp(118px, 26vw, 168px)",
         height: "clamp(118px, 26vw, 168px)",
+        filter:
+          "drop-shadow(0 14px 26px rgba(90,26,26,0.32)) drop-shadow(0 3px 6px rgba(201,123,99,0.35))",
       }}
     >
-      <motion.span
-        animate={revealed ? { scale: 1, opacity: 1 } : { scale: 0.96, opacity: 0.95 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute inset-0 flex items-center justify-center font-serif text-[color:var(--burgundy)] select-none pointer-events-none"
-        style={{ fontSize: "clamp(28px, 6vw, 44px)" }}
-        aria-label={aria}
+      {/* heart-shaped stage: clip + the soft blush card behind the gold */}
+      <div
+        className="absolute inset-0 overflow-hidden bg-[#fff4f0]"
+        style={{ clipPath: "url(#scratch-heart)" }}
       >
-        {label}
-      </motion.span>
+        <motion.span
+          animate={revealed ? { scale: 1, opacity: 1 } : { scale: 0.96, opacity: 0.95 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-0 flex items-center justify-center pb-[16%] font-serif text-[color:var(--burgundy)] select-none pointer-events-none"
+          style={{ fontSize: "clamp(26px, 5.4vw, 40px)" }}
+          aria-label={aria}
+        >
+          {label}
+        </motion.span>
 
-      <motion.canvas
-        ref={canvasRef}
-        animate={
-          revealed
-            ? { opacity: 0, scale: 1.06 }
-            : { opacity: 1, scale: 1 }
-        }
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute inset-0 h-full w-full touch-none"
-        style={{ cursor: revealed ? "default" : "grab" }}
-        onPointerDown={onDown}
-        onPointerMove={onMove}
-        onPointerUp={onUp}
-        onPointerCancel={onUp}
-      />
-
-      {!revealed && (
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle at 30% 30%, rgba(255,250,230,0.45), rgba(255,250,230,0) 55%)",
-          }}
+        <motion.canvas
+          ref={canvasRef}
+          animate={
+            revealed
+              ? { opacity: 0, scale: 1.06 }
+              : { opacity: 1, scale: 1 }
+          }
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-0 h-full w-full touch-none"
+          style={{ cursor: revealed ? "default" : "grab" }}
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerCancel={onUp}
         />
-      )}
+
+        {!revealed && (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(circle at 34% 26%, rgba(255,252,238,0.7), rgba(255,252,238,0) 52%)",
+            }}
+          />
+        )}
+      </div>
     </motion.div>
   );
 }
@@ -425,6 +433,24 @@ export default function ScratchReveal() {
       innerClassName="text-center"
       centerInViewport
     >
+      {/* scalable heart clip shared by every scratch card */}
+      <svg
+        aria-hidden="true"
+        width="0"
+        height="0"
+        className="absolute"
+        style={{ position: "absolute" }}
+      >
+        <defs>
+          <clipPath id="scratch-heart" clipPathUnits="objectBoundingBox">
+            <path
+              transform="scale(0.03125, 0.0337838)"
+              d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4 c0,9.4,9.5,11.9,16,21.2c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"
+            />
+          </clipPath>
+        </defs>
+      </svg>
+
       <ConfettiBurst active={allRevealed} />
 
       <motion.div

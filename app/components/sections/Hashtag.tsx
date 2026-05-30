@@ -6,6 +6,54 @@ import SectionShell, {
   SectionEyebrow,
   SectionTitle,
 } from "./SectionShell";
+import HashtagScene from "./HashtagScene";
+
+// Single-weight line-art icons (stroke = currentColor) so they sit naturally on
+// the cream background in the same visual language as the rest of the invite.
+function RingsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 64 56"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.4}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="24" cy="34" r="15" />
+      <circle cx="42" cy="34" r="15" />
+      <path d="M42 4 36 12 42 22 48 12Z" />
+      <path d="M36 12H48" />
+    </svg>
+  );
+}
+
+function ToastIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 72 56"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.4}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <g transform="rotate(-12 30 30)">
+        <path d="M22 8 38 8 30 28Z" />
+        <path d="M30 28V48" />
+        <path d="M22 50H38" />
+      </g>
+      <g transform="rotate(12 42 30)">
+        <path d="M34 8 50 8 42 28Z" />
+        <path d="M42 28V48" />
+        <path d="M34 50H50" />
+      </g>
+      <path d="M36 4V0M32 6 30 3M40 6 42 3" />
+    </svg>
+  );
+}
 
 export default function Hashtag() {
   return (
@@ -19,10 +67,20 @@ export default function Hashtag() {
       <SectionDivider />
 
       <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.96 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: true, margin: "-10% 0px" }}
+        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+        className="mx-auto mt-8 w-full max-w-xl"
+      >
+        <HashtagScene className="hashtag-art w-full h-auto" />
+      </motion.div>
+
+      <motion.div
         initial={{ opacity: 0, y: 14 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10% 0px" }}
-        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         className="mt-6"
       >
         <h3
@@ -62,9 +120,28 @@ export default function Hashtag() {
         </p>
       </div>
 
-      <div className="mx-auto mt-12 flex items-center justify-center gap-4 text-2xl sm:text-3xl text-[color:var(--burgundy)]">
-        <span aria-hidden="true">💍</span>
-        <span aria-hidden="true">🥂</span>
+      <div className="mx-auto mt-12 flex items-center justify-center gap-8 text-[color:var(--burgundy)]">
+        {[RingsIcon, ToastIcon].map((Icon, i) => (
+          <motion.span
+            key={i}
+            aria-hidden="true"
+            initial={{ opacity: 0, scale: 0.5 }}
+            whileInView={{
+              opacity: 1,
+              scale: 1,
+              rotate: [0, -16, 13, -10, 7, -4, 0],
+            }}
+            viewport={{ once: true, margin: "-10% 0px" }}
+            transition={{
+              duration: 0.8,
+              delay: 0.1 + i * 0.14,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="inline-block"
+          >
+            <Icon className="h-10 w-10 sm:h-12 sm:w-12" />
+          </motion.span>
+        ))}
       </div>
 
       <p className="mt-10 font-sans text-[11px] sm:text-xs uppercase tracking-[0.4em] text-[color:var(--burgundy-soft)]/80">

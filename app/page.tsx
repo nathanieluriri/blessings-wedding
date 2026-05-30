@@ -1,5 +1,4 @@
 import OpeningSequence from "./components/OpeningSequence";
-import Hero from "./components/sections/Hero";
 import ScratchReveal from "./components/sections/ScratchReveal";
 import Itinerary from "./components/sections/Itinerary";
 import Location from "./components/sections/Location";
@@ -14,7 +13,7 @@ import ThankYou from "./components/sections/ThankYou";
 export default function Home() {
   return (
     <main className="relative bg-[color:var(--cream)]">
-      <Hero />
+      <OpeningSequence />
       <ScratchReveal />
       <Itinerary />
       <Location />
@@ -25,7 +24,6 @@ export default function Home() {
       <QnA />
       <Countdown />
       <ThankYou />
-      <OpeningSequence />
     </main>
   );
 }
