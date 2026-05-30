@@ -38,6 +38,16 @@ export default function RSVP() {
         <p className="mx-auto max-w-xl font-serif italic text-base sm:text-lg text-[color:var(--burgundy-soft)]/80">
           Please let us know by 30 November 2026.
         </p>
+        <p className="mx-auto mt-3 max-w-xl font-sans text-sm text-[color:var(--burgundy-soft)]/80">
+          Prefer email? RSVP to{" "}
+          <a
+            href="mailto:theofokansis@gmail.com"
+            className="font-medium text-[color:var(--burgundy)] underline decoration-[color:var(--burgundy)]/30 underline-offset-4 hover:decoration-[color:var(--burgundy)]"
+          >
+            theofokansis@gmail.com
+          </a>
+          .
+        </p>
       </div>
 
       <AnimatePresence mode="wait">

@@ -34,8 +34,8 @@ export default function Hashtag() {
       </motion.div>
 
       <p className="mx-auto mt-10 max-w-2xl font-serif italic text-base sm:text-lg text-[color:var(--burgundy-soft)]/85">
-        We wanted a hashtag that carried the weight of our love and our
-        heritage.
+        We wanted a hashtag that felt personal, meaningful, and deeply rooted in
+        our culture.
       </p>
 
       <div className="mx-auto mt-8 max-w-2xl font-sans text-sm sm:text-base leading-relaxed text-[color:var(--foreground)]/80 space-y-5">
@@ -43,21 +43,22 @@ export default function Hashtag() {
           <span className="font-serif italic text-[color:var(--burgundy)]">
             #OfoDiMma
           </span>{" "}
-          is a perfect combination — it brings together Justice&rsquo;s surname,{" "}
+          came together so naturally, blending Justice&rsquo;s surname,{" "}
           <strong className="font-semibold text-[color:var(--burgundy)]">
-            Ofokansi
-          </strong>
-          , and the name{" "}
+            &ldquo;Ofokansi,&rdquo;
+          </strong>{" "}
+          with Blessing&rsquo;s middle name,{" "}
           <strong className="font-semibold text-[color:var(--burgundy)]">
-            Mmayen
+            &ldquo;Mmayen.&rdquo;
           </strong>
-          . In Igbo,{" "}
-          <em className="font-serif italic">&ldquo;Ọ dị mma&rdquo;</em> means{" "}
-          <em className="font-serif italic">&ldquo;It is good.&rdquo;</em>
         </p>
         <p>
-          We love that this hashtag honours both of our heritages and speaks so
-          beautifully to the loving family we are about to build together.
+          In Igbo, <em className="font-serif italic">&ldquo;Ọ dị mma&rdquo;</em>{" "}
+          means <em className="font-serif italic">&ldquo;it is good.&rdquo;</em>
+        </p>
+        <p>
+          It&rsquo;s more than just a hashtag — it reflects our journey, our
+          love, our roots, and the beautiful life we&rsquo;re building together.
         </p>
       </div>
 

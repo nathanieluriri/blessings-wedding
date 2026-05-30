@@ -194,6 +194,34 @@ html.lenis body {
   pointer-events: none;
 }
 
+/* Monogram "ghost outline + tracing pen", outlines only.
+   Two layers share the same paths (each with pathLength="1" so the dash math
+   is normalized 0..1 regardless of real length or render size):
+     .monogram-ghost  faint full outline, visible from the start (the guide)
+     .monogram-trace  brighter line whose stroke-dashoffset is driven in JS,
+                       from 1 (hidden) to 0 (fully drawn), in lockstep with
+                       the counter so 100 lands exactly as the trace completes. */
+.monogram-ghost,
+.monogram-trace {
+  fill: none;
+  stroke: var(--burgundy);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* keep the hairline crisp and constant no matter how the SVG is scaled */
+  vector-effect: non-scaling-stroke;
+}
+
+.monogram-ghost {
+  opacity: 0.16;
+  stroke-width: 1.3;
+}
+
+.monogram-trace {
+  stroke-width: 1.9;
+  stroke-dasharray: 1;
+  /* stroke-dashoffset is set inline per frame (1 -> 0) */
+}
+
 @keyframes hashtagGlow {
   0%,
   100% {

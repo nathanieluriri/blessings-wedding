@@ -16,8 +16,8 @@ import SectionShell, {
   SectionTitle,
 } from "./SectionShell";
 
-const REVEAL_THRESHOLD = 0.5;
-const SAMPLE_INTERVAL_MS = 110;
+const REVEAL_THRESHOLD = 0.16;
+const SAMPLE_INTERVAL_MS = 40;
 const LOGICAL_SIZE = 220;
 
 const CARDS: { label: string; aria: string }[] = [
@@ -99,8 +99,20 @@ function ScratchCard({ label, aria, delay, onReveal }: ScratchCardProps) {
     ctx.globalCompositeOperation = "destination-out";
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.lineWidth = 36;
+    ctx.lineWidth = 54;
   }, [paintForeground]);
+
+  const clearAll = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }, []);
 
   const samplePercent = useCallback(() => {
     const canvas = canvasRef.current;
@@ -137,7 +149,7 @@ function ScratchCard({ label, aria, delay, onReveal }: ScratchCardProps) {
         ctx.lineTo(x, y);
         ctx.stroke();
       } else {
-        ctx.arc(x, y, 20, 0, Math.PI * 2);
+        ctx.arc(x, y, 30, 0, Math.PI * 2);
         ctx.fill();
       }
       lastPointRef.current = { x, y };
@@ -148,12 +160,13 @@ function ScratchCard({ label, aria, delay, onReveal }: ScratchCardProps) {
         const p = samplePercent();
         if (p >= REVEAL_THRESHOLD && !revealedRef.current) {
           revealedRef.current = true;
+          clearAll();
           setRevealed(true);
           onReveal();
         }
       }
     },
-    [samplePercent, onReveal],
+    [samplePercent, onReveal, clearAll],
   );
 
   const toLocal = (
@@ -250,8 +263,7 @@ type ConfettiPiece = {
   dur: number;
   delay: number;
   color: string;
-  w: number;
-  h: number;
+  size: number;
 };
 
 function ConfettiPieces() {
@@ -267,8 +279,7 @@ function ConfettiPieces() {
         delay: Math.random() * 0.6,
         color:
           CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-        w: 6 + Math.random() * 8,
-        h: 10 + Math.random() * 10,
+        size: 13 + Math.random() * 13,
       });
     }
     return next;
@@ -280,22 +291,28 @@ function ConfettiPieces() {
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
       {pieces.map((p) => (
-        <span
+        <svg
           key={p.i}
           className="confetti-piece"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
           style={
             {
               left: `${p.left}%`,
-              backgroundColor: p.color,
-              width: `${p.w}px`,
-              height: `${p.h}px`,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
               "--cx": `${p.drift}px`,
               "--cr": `${p.rotate}deg`,
               "--cdur": `${p.dur}s`,
               "--cdelay": `${p.delay}s`,
             } as React.CSSProperties
           }
-        />
+        >
+          <path
+            fill={p.color}
+            d="M12 21s-7.5-4.9-10-9.3C.4 8.6 1.8 5 5.2 5c2 0 3.4 1.2 4.3 2.6l.5.8.5-.8C11.4 6.2 12.8 5 14.8 5c3.4 0 4.8 3.6 3.2 6.7C19.5 16.1 12 21 12 21z"
+          />
+        </svg>
       ))}
     </div>
   );
@@ -319,7 +336,7 @@ export default function ScratchReveal() {
     setRevealedCount((n) => Math.min(CARDS.length, n + 1));
   }, []);
 
-  useScrollLock("scratch-reveal", phase === "engaged");
+  useScrollLock("scratch-reveal", phase === "engaged" && !allRevealed);
 
   useEffect(() => {
     if (phase !== "idle") return;
@@ -361,7 +378,7 @@ export default function ScratchReveal() {
   }, [phase, lenis]);
 
   useEffect(() => {
-    if (phase !== "engaged") return;
+    if (phase !== "engaged" || allRevealed) return;
     const sectionEl = sectionRef.current ?? document.getElementById("reveal");
     if (!sectionEl) return;
 
@@ -393,7 +410,7 @@ export default function ScratchReveal() {
       window.removeEventListener("scroll", onScroll);
       if (snapTimer !== undefined) window.clearTimeout(snapTimer);
     };
-  }, [phase, lenis]);
+  }, [phase, lenis, allRevealed]);
 
   useEffect(() => {
     if (!allRevealed || phase !== "engaged") return;
@@ -463,9 +480,6 @@ export default function ScratchReveal() {
           >
             <p className="font-serif text-3xl sm:text-4xl text-[color:var(--burgundy)]">
               We&rsquo;re getting married!
-            </p>
-            <p className="mt-3 font-serif italic text-base sm:text-lg text-[color:var(--burgundy-soft)]/80">
-              Save the date &middot; Acropolis Park, Apo
             </p>
           </motion.div>
         )}

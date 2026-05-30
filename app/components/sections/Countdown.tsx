@@ -100,16 +100,6 @@ export default function Countdown() {
       <p className="mt-10 font-serif italic text-base sm:text-lg text-[color:var(--burgundy-soft)]/80">
         until we say &ldquo;I do&rdquo;
       </p>
-
-      <p className="mt-16 font-sans text-[11px] sm:text-xs uppercase tracking-[0.4em] text-[color:var(--burgundy-soft)]/85">
-        The celebration will take place at
-      </p>
-      <p className="mt-3 font-serif text-2xl sm:text-3xl text-[color:var(--burgundy)]">
-        Acropolis Park, Apo
-      </p>
-      <p className="mt-1 font-serif italic text-sm sm:text-base text-[color:var(--burgundy-soft)]/75">
-        19 December 2026 &middot; 2:30 pm
-      </p>
     </SectionShell>
   );
 }
