@@ -114,16 +114,16 @@ export function BottomNavLinkContent({
 
   return (
     <>
-      {pending ? (
-        <Loader2Icon className="size-[1.35rem] animate-spin" aria-hidden />
-      ) : (
-        <Icon
-          className={cn(
-            "size-[1.35rem] transition-transform",
-            active && "scale-105"
-          )}
-        />
-      )}
+      {/* Icon chip: the filled burgundy→gold gradient (active state), tap
+          ripple and lift all live in globals.css, keyed off the link's
+          aria-current so the styling stays declarative. */}
+      <span className="admin-bottomnav__icon" data-active={active || undefined}>
+        {pending ? (
+          <Loader2Icon className="size-[1.25rem] animate-spin" aria-hidden />
+        ) : (
+          <Icon className="size-[1.25rem]" />
+        )}
+      </span>
       <span className={cn("max-w-full truncate", pending && "opacity-70")}>
         {label}
       </span>

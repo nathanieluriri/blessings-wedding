@@ -131,28 +131,68 @@
 }
 
 /* ── Mobile bottom tab bar (admin) ──────────────────────────────────────────
-   Fixed, thumb-friendly primary navigation on < md. A soft upward shadow and
-   crisp top border lift it off the content; the active tab is burgundy with a
-   gold pill indicator (see nav.tsx). Touch targets are ≥ 56px tall. The bar is
-   rendered/hidden via Tailwind's `md:hidden`; these rules add the chrome that
-   utilities can't express cleanly. */
+   Fixed, thumb-friendly primary navigation on < md. The surface is a warm cream
+   gradient capped by a gold hairline and lifted off the content with a soft
+   burgundy shadow. The active tab's icon sits in a filled burgundy→gold chip
+   (the unmistakable "you are here" affordance); see nav.tsx / nav-progress.tsx.
+   Touch targets are ≥ 60px tall. The bar is shown/hidden via Tailwind's
+   `md:hidden`; these rules add the chrome utilities can't express cleanly. */
 .admin-shell .admin-bottomnav {
-  box-shadow: 0 -8px 24px -12px color-mix(in srgb, var(--primary) 45%, transparent);
+  background:
+    linear-gradient(
+      to top,
+      color-mix(in srgb, var(--cream-deep) 92%, white) 0%,
+      var(--card) 82%
+    );
+  border-top: 1px solid color-mix(in srgb, var(--gold) 60%, transparent);
+  box-shadow: 0 -12px 32px -18px color-mix(in srgb, var(--primary) 60%, transparent);
 }
 .admin-shell .admin-bottomnav__item {
   /* Comfortable, consistent tap target regardless of label length. */
-  min-height: 56px;
+  min-height: 60px;
   -webkit-tap-highlight-color: transparent;
   transition: color 160ms ease;
 }
-.admin-shell .admin-bottomnav__pill {
-  /* The gold active indicator animates in; subtle and quick. */
-  transition: opacity 180ms ease;
+
+/* Icon chip — the heart of the active affordance. Inactive: a transparent
+   pill that warms to gold on tap. Active: a filled burgundy→gold gradient with
+   a gold inner ring, a gentle lift and a soft burgundy glow. */
+.admin-shell .admin-bottomnav__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.875rem;
+  width: 3rem;
+  border-radius: 999px;
+  transition:
+    background-color 200ms ease,
+    background-image 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
+}
+.admin-shell .admin-bottomnav__item:active .admin-bottomnav__icon {
+  background-color: color-mix(in srgb, var(--gold) 24%, transparent);
+}
+.admin-shell .admin-bottomnav__icon[data-active] {
+  background-image: linear-gradient(
+    145deg,
+    var(--burgundy-soft) 0%,
+    var(--primary) 100%
+  );
+  color: var(--primary-foreground);
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 14px -6px color-mix(in srgb, var(--primary) 75%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--gold) 50%, transparent);
 }
 @media (prefers-reduced-motion: reduce) {
   .admin-shell .admin-bottomnav__item,
-  .admin-shell .admin-bottomnav__pill {
+  .admin-shell .admin-bottomnav__icon {
     transition: none;
+  }
+  .admin-shell .admin-bottomnav__icon[data-active] {
+    transform: none;
   }
 }
 

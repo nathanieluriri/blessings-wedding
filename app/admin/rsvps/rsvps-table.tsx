@@ -173,8 +173,14 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
 
   return (
     <div className="space-y-4">
+      {/* Status filter pills. Wrapping flex on every breakpoint so all six are
+          always visible (no off-screen scroll) and each pill sizes to its label.
+          Themed to the burgundy / cream / gold palette: active pill is filled
+          burgundy with a gold ring; its count sits in a gold chip with burgundy
+          text so it stays readable. `!` overrides shadcn's base active styles
+          (which would otherwise force a light `bg-background`). */}
       <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-        <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-xl border border-stone-200 bg-stone-100 p-1.5 dark:border-stone-700 dark:bg-stone-800/60">
+        <TabsList className="h-auto w-full flex-wrap justify-start gap-2 rounded-none bg-transparent p-0">
           {FILTERS.map((f) => {
             const color = f === "all" ? ALL_FILTER_COLOR : STATUS_COLOR[f];
             const active = filter === f;
@@ -183,23 +189,27 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                 key={f}
                 value={f}
                 className={cn(
-                  "min-h-10 flex-1 gap-2 rounded-lg px-3 py-2 text-sm font-medium text-stone-600 transition-colors sm:flex-initial sm:px-3.5",
-                  "hover:bg-stone-200/70 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-700/60 dark:hover:text-stone-100",
-                  "data-[state=active]:bg-stone-700 data-[state=active]:font-semibold data-[state=active]:text-white data-[state=active]:shadow-sm",
-                  "dark:data-[state=active]:bg-stone-200 dark:data-[state=active]:text-stone-900"
+                  "flex-none gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
+                  "border-border! bg-card! text-muted-foreground!",
+                  "hover:border-primary/40 hover:text-foreground!",
+                  "data-[state=active]:border-(--gold)! data-[state=active]:bg-primary! data-[state=active]:font-semibold data-[state=active]:text-primary-foreground! data-[state=active]:shadow-sm"
                 )}
               >
                 <span
-                  className={cn("size-2 shrink-0 rounded-full", color.dot)}
+                  className={cn(
+                    "size-2 shrink-0 rounded-full",
+                    color.dot,
+                    active && "ring-1 ring-inset ring-white/60"
+                  )}
                   aria-hidden
                 />
                 {f === "all" ? "All" : STATUS_META[f].label}
                 <span
                   className={cn(
-                    "rounded-full px-1.5 text-xs tabular-nums",
+                    "rounded-full px-1.5 py-0.5 text-xs font-semibold tabular-nums",
                     active
-                      ? "bg-white/20 text-white dark:bg-black/10 dark:text-stone-900"
-                      : "bg-stone-200 text-stone-600 dark:bg-stone-700 dark:text-stone-300"
+                      ? "bg-(--gold) text-primary"
+                      : "bg-foreground/10 text-foreground"
                   )}
                 >
                   {counts[f] ?? 0}

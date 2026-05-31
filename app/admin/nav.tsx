@@ -68,8 +68,10 @@ export default function AdminNav() {
 /**
  * Mobile primary navigation: a fixed, thumb-friendly bottom tab bar (< md).
  * Six destinations, each a tall touch target (≥ 56px) with icon + tiny label.
- * The active tab is burgundy with a gold pill indicator above it. Hidden at
- * md+ where the left sidebar takes over.
+ * The active tab's icon sits inside a filled burgundy→gold gradient chip (see
+ * `BottomNavLinkContent` + the `.admin-bottomnav__icon` rules in globals.css),
+ * giving the current page an unmistakable, premium affordance. Hidden at md+
+ * where the left sidebar takes over.
  */
 export function AdminBottomNav() {
   const pathname = usePathname();
@@ -77,7 +79,9 @@ export function AdminBottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="admin-bottomnav fixed inset-x-0 bottom-0 z-40 flex border-t bg-card/95 backdrop-blur md:hidden"
+      // Surface (cream gradient, gold hairline, lift shadow) lives in
+      // globals.css so it can use color-mix / the brand tokens cleanly.
+      className="admin-bottomnav fixed inset-x-0 bottom-0 z-40 flex backdrop-blur-sm md:hidden"
     >
       {LINKS.map(({ href, short, label, icon: Icon }) => {
         const active = isActive(href, pathname);
@@ -91,19 +95,12 @@ export function AdminBottomNav() {
             // the user always gets navigation feedback on these dynamic pages.
             prefetch={false}
             className={cn(
-              "admin-bottomnav__item group relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] pt-2 text-[0.625rem] font-medium leading-none outline-none transition-colors focus-visible:bg-sidebar-accent/50",
+              "admin-bottomnav__item group relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 px-0.5 pb-[max(0.4375rem,env(safe-area-inset-bottom))] pt-2 text-[0.625rem] leading-none outline-none transition-colors focus-visible:bg-accent/60",
               active
-                ? "text-[color:var(--primary)]"
-                : "text-muted-foreground active:text-[color:var(--primary)]"
+                ? "font-semibold text-[color:var(--primary)]"
+                : "font-medium text-[color:var(--muted-foreground)]"
             )}
           >
-            <span
-              aria-hidden
-              className={cn(
-                "admin-bottomnav__pill absolute inset-x-3 top-0 h-0.5 rounded-full transition-opacity",
-                active ? "bg-[color:var(--gold)] opacity-100" : "opacity-0"
-              )}
-            />
             <BottomNavLinkContent icon={Icon} label={short} active={active} />
           </Link>
         );
