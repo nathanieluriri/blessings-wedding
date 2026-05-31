@@ -29,9 +29,13 @@ export default function LogoutButton() {
       size="sm"
       loading={loading}
       onClick={handleLogout}
+      // Comfortable tap target on mobile (≥40px); icon-only at the narrowest
+      // widths so the top bar never crowds, label returns at sm+.
+      className="h-10 px-2.5 sm:h-9 sm:px-3"
+      aria-label="Sign out"
     >
       <LogOutIcon />
-      Sign out
+      <span className="hidden sm:inline">Sign out</span>
     </LoadingButton>
   );
 }

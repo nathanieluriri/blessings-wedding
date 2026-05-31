@@ -88,3 +88,45 @@ export function NavLinkContent({
     </>
   );
 }
+
+// ── Bottom tab bar pending indicator ────────────────────────────────────────
+// Same contract as NavLinkContent, but laid out for the mobile bottom tab bar:
+// a (larger) icon stacked above a tiny label. Swaps the icon for a spinner
+// while that tab's navigation is pending and drives the global top bar.
+
+export function BottomNavLinkContent({
+  icon: Icon,
+  label,
+  active,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  active: boolean;
+}) {
+  const { pending } = useLinkStatus();
+  const { start, stop } = useNavProgress();
+
+  useEffect(() => {
+    if (!pending) return;
+    start();
+    return () => stop();
+  }, [pending, start, stop]);
+
+  return (
+    <>
+      {pending ? (
+        <Loader2Icon className="size-[1.35rem] animate-spin" aria-hidden />
+      ) : (
+        <Icon
+          className={cn(
+            "size-[1.35rem] transition-transform",
+            active && "scale-105"
+          )}
+        />
+      )}
+      <span className={cn("max-w-full truncate", pending && "opacity-70")}>
+        {label}
+      </span>
+    </>
+  );
+}

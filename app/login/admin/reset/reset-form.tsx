@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 
 export default function ResetForm({ token }: { token: string }) {
@@ -93,9 +93,8 @@ export default function ResetForm({ token }: { token: string }) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="new-password">New password</Label>
-              <Input
+              <PasswordInput
                 id="new-password"
-                type="password"
                 autoComplete="new-password"
                 required
                 minLength={8}
@@ -105,9 +104,8 @@ export default function ResetForm({ token }: { token: string }) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm-password">Confirm password</Label>
-              <Input
+              <PasswordInput
                 id="confirm-password"
-                type="password"
                 autoComplete="new-password"
                 required
                 minLength={8}

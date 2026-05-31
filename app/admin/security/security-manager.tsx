@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 
 interface SetupData {
@@ -128,11 +129,14 @@ export default function SecurityManager({
   }
 
   return (
-    <Card className="max-w-lg">
+    <Card className="w-full max-w-lg">
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
-          <CardTitle>Two-factor authentication</CardTitle>
-          <Badge variant={twoFactorEnabled ? "default" : "secondary"}>
+          <CardTitle className="min-w-0">Two-factor authentication</CardTitle>
+          <Badge
+            variant={twoFactorEnabled ? "default" : "secondary"}
+            className="shrink-0"
+          >
             {twoFactorEnabled ? "On" : "Off"}
           </Badge>
         </div>
@@ -159,11 +163,19 @@ export default function SecurityManager({
       </CardContent>
       <CardFooter>
         {twoFactorEnabled ? (
-          <Button variant="outline" onClick={() => setDisableOpen(true)}>
+          <Button
+            variant="outline"
+            onClick={() => setDisableOpen(true)}
+            className="h-11 w-full sm:h-9 sm:w-auto"
+          >
             Disable two-factor
           </Button>
         ) : (
-          <LoadingButton loading={working} onClick={beginEnroll}>
+          <LoadingButton
+            loading={working}
+            onClick={beginEnroll}
+            className="h-11 w-full sm:h-9 sm:w-auto"
+          >
             Set up two-factor
           </LoadingButton>
         )}
@@ -176,7 +188,7 @@ export default function SecurityManager({
           if (!o) finishEnroll();
         }}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           {recoveryCodes ? (
             <>
               <DialogHeader>
@@ -190,18 +202,27 @@ export default function SecurityManager({
                 {recoveryCodes.map((c) => (
                   <div
                     key={c}
-                    className="rounded-md bg-secondary px-2.5 py-1.5 text-center text-secondary-foreground"
+                    className="rounded-md bg-secondary px-2.5 py-1.5 text-center break-all text-secondary-foreground"
                   >
                     {c}
                   </div>
                 ))}
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={copyRecovery}>
+                <Button
+                  variant="outline"
+                  onClick={copyRecovery}
+                  className="h-11 w-full sm:h-9 sm:w-auto"
+                >
                   <CopyIcon />
                   Copy
                 </Button>
-                <Button onClick={finishEnroll}>I&apos;ve saved them</Button>
+                <Button
+                  onClick={finishEnroll}
+                  className="h-11 w-full sm:h-9 sm:w-auto"
+                >
+                  I&apos;ve saved them
+                </Button>
               </DialogFooter>
             </>
           ) : (
@@ -220,7 +241,7 @@ export default function SecurityManager({
                     <img
                       src={setup.qr}
                       alt="Two-factor QR code"
-                      className="size-44 rounded-lg border bg-white p-2"
+                      className="aspect-square size-40 max-w-full rounded-lg border bg-white p-2 sm:size-44"
                     />
                     <p className="text-center text-xs text-muted-foreground">
                       Can&apos;t scan? Enter this key manually:
@@ -241,17 +262,25 @@ export default function SecurityManager({
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     placeholder="123456"
-                    className="text-center tracking-[0.3em]"
+                    className="h-11 text-center tracking-[0.3em] sm:h-9"
                   />
                 </div>
               </div>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button type="button" variant="ghost">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-11 w-full sm:h-9 sm:w-auto"
+                  >
                     Cancel
                   </Button>
                 </DialogClose>
-                <LoadingButton type="submit" loading={working}>
+                <LoadingButton
+                  type="submit"
+                  loading={working}
+                  className="h-11 w-full sm:h-9 sm:w-auto"
+                >
                   Verify &amp; enable
                 </LoadingButton>
               </DialogFooter>
@@ -262,7 +291,7 @@ export default function SecurityManager({
 
       {/* Disable dialog */}
       <Dialog open={disableOpen} onOpenChange={setDisableOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <form onSubmit={disable}>
             <DialogHeader>
               <DialogTitle>Disable two-factor</DialogTitle>
@@ -272,18 +301,22 @@ export default function SecurityManager({
             </DialogHeader>
             <div className="space-y-2 py-4">
               <Label htmlFor="disable-pass">Password</Label>
-              <Input
+              <PasswordInput
                 id="disable-pass"
-                type="password"
                 autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="h-11 sm:h-9"
               />
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="ghost">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-11 w-full sm:h-9 sm:w-auto"
+                >
                   Cancel
                 </Button>
               </DialogClose>
@@ -291,6 +324,7 @@ export default function SecurityManager({
                 type="submit"
                 variant="destructive"
                 loading={working}
+                className="h-11 w-full sm:h-9 sm:w-auto"
               >
                 Disable
               </LoadingButton>

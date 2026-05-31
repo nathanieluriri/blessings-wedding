@@ -54,7 +54,7 @@ export default function NotificationsPrefForm({
   }
 
   return (
-    <Card className="max-w-lg">
+    <Card className="w-full max-w-lg">
       <CardHeader>
         <CardTitle>Email notifications</CardTitle>
         <CardDescription>
@@ -63,7 +63,7 @@ export default function NotificationsPrefForm({
       </CardHeader>
       <CardContent>
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
+          <div className="flex min-w-0 items-start gap-3">
             <span
               className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center text-[color:var(--primary)]"
               aria-hidden="true"
@@ -74,7 +74,7 @@ export default function NotificationsPrefForm({
                 <BellOffIcon className="size-4" />
               )}
             </span>
-            <div className="space-y-0.5">
+            <div className="min-w-0 space-y-0.5">
               <Label htmlFor="email-notifications">
                 Receive RSVP &amp; test emails
               </Label>
@@ -86,6 +86,7 @@ export default function NotificationsPrefForm({
           </div>
           <Switch
             id="email-notifications"
+            className="shrink-0"
             checked={enabled}
             disabled={saving}
             onCheckedChange={handleChange}

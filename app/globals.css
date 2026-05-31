@@ -58,7 +58,20 @@
 /* ── Admin dashboard theme (shadcn/ui) ──────────────────────────────────────
    Scoped to `.admin-shell` so it never bleeds into the public wedding site.
    Palette matches the site's burgundy / cream / gold. */
-.admin-shell {
+/* Token VALUES are applied to the admin shell AND to the Radix overlays that
+   portal into <body> (dialog / alert-dialog / dropdown-menu / select), which
+   render OUTSIDE `.admin-shell` and would otherwise lose the burgundy/cream/gold
+   theme (var(--primary) etc. would be undefined → unstyled buttons/surfaces).
+   The public site uses none of these overlay primitives (all consumers live in
+   app/admin/**), so defining the tokens on these slots leaves the public theme
+   untouched (portal-scoped overlay tokens). */
+.admin-shell,
+[data-slot="dialog-overlay"],
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-overlay"],
+[data-slot="alert-dialog-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"] {
   --background: #faf6f0;
   --foreground: #2a1a14;
   --card: #ffffff;
@@ -90,7 +103,12 @@
   /* Brand accent, scoped here too so admin styling never depends on the
      public :root (used by the nav progress bar gradient). */
   --gold: #c9a96b;
+}
 
+/* The visual surface (page background / text / font) belongs to the shell
+   itself — not the portaled overlays, which paint their own surfaces
+   (bg-black/50 scrim, bg-background panel) via utilities. */
+.admin-shell {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -100,8 +118,42 @@
    components expect the themed `--border`. Scope that default to the admin. */
 .admin-shell *,
 .admin-shell *::before,
-.admin-shell *::after {
+.admin-shell *::after,
+[data-slot="dialog-content"],
+[data-slot="dialog-content"] *,
+[data-slot="alert-dialog-content"],
+[data-slot="alert-dialog-content"] *,
+[data-slot="dropdown-menu-content"],
+[data-slot="dropdown-menu-content"] *,
+[data-slot="select-content"],
+[data-slot="select-content"] * {
   border-color: var(--border);
+}
+
+/* ── Mobile bottom tab bar (admin) ──────────────────────────────────────────
+   Fixed, thumb-friendly primary navigation on < md. A soft upward shadow and
+   crisp top border lift it off the content; the active tab is burgundy with a
+   gold pill indicator (see nav.tsx). Touch targets are ≥ 56px tall. The bar is
+   rendered/hidden via Tailwind's `md:hidden`; these rules add the chrome that
+   utilities can't express cleanly. */
+.admin-shell .admin-bottomnav {
+  box-shadow: 0 -8px 24px -12px color-mix(in srgb, var(--primary) 45%, transparent);
+}
+.admin-shell .admin-bottomnav__item {
+  /* Comfortable, consistent tap target regardless of label length. */
+  min-height: 56px;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms ease;
+}
+.admin-shell .admin-bottomnav__pill {
+  /* The gold active indicator animates in; subtle and quick. */
+  transition: opacity 180ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell .admin-bottomnav__item,
+  .admin-shell .admin-bottomnav__pill {
+    transition: none;
+  }
 }
 
 /* Global navigation progress bar (admin). Fixed sliver at the top of the

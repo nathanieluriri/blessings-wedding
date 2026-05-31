@@ -156,7 +156,7 @@ export default function NotificationsForm({
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle>New RSVP notifications</CardTitle>
         <CardDescription>
@@ -165,7 +165,7 @@ export default function NotificationsForm({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center justify-between gap-4">
-          <div className="space-y-0.5">
+          <div className="min-w-0 space-y-0.5">
             <Label htmlFor="rsvp-toggle">Email me about new RSVPs</Label>
             <p className="text-xs text-muted-foreground">
               Turn off to stop all new-RSVP emails.
@@ -173,6 +173,7 @@ export default function NotificationsForm({
           </div>
           <Switch
             id="rsvp-toggle"
+            className="shrink-0"
             checked={enabled}
             onCheckedChange={setEnabled}
           />
@@ -196,8 +197,8 @@ export default function NotificationsForm({
         )}
 
         <div className="space-y-3">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="space-y-0.5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+            <div className="min-w-0 space-y-0.5">
               <Label>Recipients</Label>
               <p className="text-xs text-muted-foreground">
                 Everyone emailed when a new RSVP arrives.
@@ -209,13 +210,95 @@ export default function NotificationsForm({
               size="sm"
               disabled={!selfNotificationsEnabled || allEmails.length === 0}
               onClick={() => sendTest(allEmails)}
+              className="h-10 w-full sm:h-8 sm:w-auto"
             >
               <SendIcon />
               Send test to all
             </LoadingButton>
           </div>
 
-          <div className="overflow-hidden rounded-lg border bg-card">
+          {/* Mobile: stacked card list (the table below is hidden < md) */}
+          <ul className="space-y-2 md:hidden">
+            {rows.length === 0 && (
+              <li className="rounded-lg border bg-card px-4 py-8 text-center text-sm text-muted-foreground">
+                No recipients yet. Add one below.
+              </li>
+            )}
+            {rows.map((row) => {
+              const recipientMuted = row.role === "admin" && row.muted;
+              return (
+                <li
+                  key={row.email}
+                  className="space-y-3 rounded-lg border bg-card p-4"
+                >
+                  <div
+                    className={cn(
+                      "flex items-start gap-2 text-sm",
+                      recipientMuted && "text-muted-foreground"
+                    )}
+                  >
+                    <MailIcon
+                      className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                      aria-hidden
+                    />
+                    <span className="min-w-0 break-all font-medium">
+                      {row.email}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {row.role === "admin" ? (
+                      <Badge variant="secondary">Admin</Badge>
+                    ) : (
+                      <Badge variant="outline">Custom</Badge>
+                    )}
+                    {recipientMuted && (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        Notifications off
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <LoadingButton
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={!selfNotificationsEnabled || recipientMuted}
+                      title={
+                        recipientMuted
+                          ? "This admin turned notifications off."
+                          : undefined
+                      }
+                      onClick={() => sendTest([row.email])}
+                      className="h-10 flex-1"
+                    >
+                      <SendIcon />
+                      Send test
+                    </LoadingButton>
+                    {row.role === "custom" && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon-lg"
+                        aria-label={`Remove ${row.email}`}
+                        onClick={() =>
+                          setExtras((prev) =>
+                            prev.filter((e) => e !== row.email)
+                          )
+                        }
+                      >
+                        <Trash2Icon aria-hidden />
+                      </Button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* md+: full data table */}
+          <div className="hidden overflow-hidden rounded-lg border bg-card md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -311,7 +394,7 @@ export default function NotificationsForm({
             </Table>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Input
               type="email"
               inputMode="email"
@@ -320,12 +403,14 @@ export default function NotificationsForm({
               onChange={(e) => setNewEmail(e.target.value)}
               onKeyDown={onNewEmailKeyDown}
               aria-label="Add a recipient email"
+              className="h-11 sm:h-9"
             />
             <Button
               type="button"
               variant="outline"
               onClick={addRecipient}
               disabled={newEmail.trim().length === 0}
+              className="h-11 w-full sm:h-9 sm:w-auto"
             >
               <PlusIcon />
               Add
@@ -338,7 +423,12 @@ export default function NotificationsForm({
         </div>
       </CardContent>
       <CardFooter>
-        <LoadingButton type="button" loading={saving} onClick={handleSave}>
+        <LoadingButton
+          type="button"
+          loading={saving}
+          onClick={handleSave}
+          className="h-11 w-full sm:h-9 sm:w-auto"
+        >
           Save
         </LoadingButton>
       </CardFooter>

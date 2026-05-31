@@ -55,7 +55,7 @@ export default function SettingsForm({
   }
 
   return (
-    <Card className="max-w-lg">
+    <Card className="w-full max-w-lg">
       <form onSubmit={handleSubmit}>
         <CardHeader>
           <CardTitle>Wedding date &amp; time</CardTitle>
@@ -73,6 +73,7 @@ export default function SettingsForm({
               required
               value={value}
               onChange={(e) => setValue(e.target.value)}
+              className="h-11 sm:h-9"
             />
             <p className="text-xs text-muted-foreground">
               Entered in your local time; the public site displays it in West
@@ -81,7 +82,11 @@ export default function SettingsForm({
           </div>
         </CardContent>
         <CardFooter>
-          <LoadingButton type="submit" loading={loading}>
+          <LoadingButton
+            type="submit"
+            loading={loading}
+            className="h-11 w-full sm:h-9 sm:w-auto"
+          >
             Save date
           </LoadingButton>
         </CardFooter>

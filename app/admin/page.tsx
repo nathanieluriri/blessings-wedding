@@ -50,9 +50,9 @@ export default async function AdminDashboard() {
   ) as Record<"yes" | "no", number>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       <div>
-        <h1 className="font-serif text-2xl text-[color:var(--primary)]">
+        <h1 className="font-serif text-xl text-[color:var(--primary)] sm:text-2xl">
           Dashboard
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -60,7 +60,7 @@ export default async function AdminDashboard() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total RSVPs</CardDescription>
@@ -123,9 +123,9 @@ export default async function AdminDashboard() {
 
       {/* Recent submissions */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
           <CardTitle className="text-base">Recent RSVPs</CardTitle>
-          <Button asChild variant="ghost" size="sm">
+          <Button asChild variant="ghost" size="sm" className="h-9 shrink-0">
             <Link href="/admin/rsvps">View all</Link>
           </Button>
         </CardHeader>
@@ -145,7 +145,7 @@ export default async function AdminDashboard() {
                   {r.email ? ` · ${r.email}` : ""}
                 </div>
               </div>
-              <StatusBadge status={r.status} />
+              <StatusBadge status={r.status} className="shrink-0" />
             </div>
           ))}
         </CardContent>

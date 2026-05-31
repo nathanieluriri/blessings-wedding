@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 
 export default function ChangePasswordDialog({
@@ -60,9 +60,16 @@ export default function ChangePasswordDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger ?? (
-          <Button variant="ghost" size="sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            // Icon-only at the narrowest widths so the top bar never crowds;
+            // label returns at sm+. Comfortable tap target on mobile (≥40px).
+            className="h-10 px-2.5 sm:h-9 sm:px-3"
+            aria-label="Change password"
+          >
             <KeyRoundIcon />
-            Change password
+            <span className="hidden sm:inline">Change password</span>
           </Button>
         )}
       </DialogTrigger>
@@ -77,9 +84,8 @@ export default function ChangePasswordDialog({
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="current">Current password</Label>
-              <Input
+              <PasswordInput
                 id="current"
-                type="password"
                 autoComplete="current-password"
                 required
                 value={currentPassword}
@@ -88,9 +94,8 @@ export default function ChangePasswordDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="new">New password</Label>
-              <Input
+              <PasswordInput
                 id="new"
-                type="password"
                 autoComplete="new-password"
                 required
                 minLength={8}
@@ -101,11 +106,15 @@ export default function ChangePasswordDialog({
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="ghost">
+              <Button type="button" variant="ghost" className="w-full sm:w-auto">
                 Cancel
               </Button>
             </DialogClose>
-            <LoadingButton type="submit" loading={loading}>
+            <LoadingButton
+              type="submit"
+              loading={loading}
+              className="w-full sm:w-auto"
+            >
               Update password
             </LoadingButton>
           </DialogFooter>

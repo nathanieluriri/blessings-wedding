@@ -95,7 +95,7 @@ export default function SocialForm({ links: initial }: { links: SocialLink[] }) 
   }
 
   return (
-    <Card className="max-w-lg">
+    <Card className="w-full max-w-lg">
       <form onSubmit={handleSubmit}>
         <CardHeader>
           <CardTitle>Social links</CardTitle>
@@ -108,16 +108,40 @@ export default function SocialForm({ links: initial }: { links: SocialLink[] }) 
 
         <CardContent className="space-y-5">
           {links.map((link) => (
-            <div key={link.platform} className="flex items-start gap-3">
+            <div
+              key={link.platform}
+              className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:flex-nowrap sm:items-start"
+            >
               <span
-                className="mt-7 inline-flex size-5 shrink-0 items-center justify-center text-[color:var(--primary)]"
+                className="inline-flex size-5 shrink-0 items-center justify-center text-[color:var(--primary)] sm:mt-7"
                 aria-hidden="true"
               >
                 <SocialIcon platform={link.platform} className="size-4" />
               </span>
 
-              <div className="flex-1 space-y-1.5">
-                <Label htmlFor={`social-${link.platform}`}>
+              {/* Mobile-only inline label sits beside icon + switch on row 1 */}
+              <Label
+                htmlFor={`social-${link.platform}`}
+                className="flex-1 min-w-0 sm:hidden"
+              >
+                {LABEL[link.platform]}
+              </Label>
+
+              <Switch
+                className="shrink-0 sm:order-last sm:mt-7"
+                aria-label={`Show ${LABEL[link.platform]}`}
+                checked={link.enabled}
+                onCheckedChange={(enabled) =>
+                  update(link.platform, { enabled })
+                }
+              />
+
+              {/* Input wraps to its own full-width row on mobile; inline at sm+ */}
+              <div className="order-last w-full min-w-0 space-y-1.5 sm:order-0 sm:w-auto sm:flex-1">
+                <Label
+                  htmlFor={`social-${link.platform}`}
+                  className="hidden sm:flex"
+                >
                   {LABEL[link.platform]}
                 </Label>
                 <Input
@@ -130,17 +154,9 @@ export default function SocialForm({ links: initial }: { links: SocialLink[] }) 
                   onChange={(e) =>
                     update(link.platform, { url: e.target.value })
                   }
+                  className="h-11 sm:h-9"
                 />
               </div>
-
-              <Switch
-                className="mt-7"
-                aria-label={`Show ${LABEL[link.platform]}`}
-                checked={link.enabled}
-                onCheckedChange={(enabled) =>
-                  update(link.platform, { enabled })
-                }
-              />
             </div>
           ))}
 
@@ -160,7 +176,11 @@ export default function SocialForm({ links: initial }: { links: SocialLink[] }) 
         </CardContent>
 
         <CardFooter>
-          <LoadingButton type="submit" loading={saving}>
+          <LoadingButton
+            type="submit"
+            loading={saving}
+            className="h-11 w-full sm:h-9 sm:w-auto"
+          >
             Save links
           </LoadingButton>
         </CardFooter>
