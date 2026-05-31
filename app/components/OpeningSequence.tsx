@@ -24,6 +24,16 @@ const HERO_IMAGE = WEDDING_IMAGES[WEDDING_IMAGES.length - 1];
 // covers it. Index matches DOM order in .intro-frame.
 const FRAME_START_SCALES = [0.46, 0.01, 0.0001, 0.000001];
 
+// Where each photo LANDS after its burst. Non-decreasing so every photo (which
+// sits above the one before it) grows large enough to fully cover its
+// predecessor. The last/topmost ends biggest, then takes over the whole screen.
+const FRAME_END_SCALES = [0.66, 0.74, 0.82, 0.9];
+
+// Seconds each photo holds the screen before the next bursts out and covers it.
+// This is THE knob for screentime: raise it to linger longer on each photo (the
+// whole intro just gets a touch longer), lower it for a snappier cascade.
+const REVEAL_BEAT = 0.21;
+
 // ease-in-out (cubic). Endpoints are exactly 0 and 1, so easing the trace never
 // shifts where a path starts/finishes — the sync points are preserved.
 const easeInOut = (t: number) =>
@@ -273,39 +283,41 @@ export default function OpeningSequence({
       .to([counterEl, pctEl], { autoAlpha: 0, y: -14, duration: 0.5, ease: "power2.in" }, "+=.2")
       .to(markEl, { autoAlpha: 0, y: -22, scale: 0.97, duration: 0.6, ease: "power2.in" }, "<")
       .to(preloader, { autoAlpha: 0, duration: 0.6 }, "-=.2")
-      // 4. all four photos expand SIMULTANEOUSLY from tiny, at DIFFERENT speeds,
-      //    so they're always nested at different sizes (every edge visible) and
-      //    ease out / decelerate as they converge into a tight stack.
+      // 4. the photos BURST out one after another, bottom of the stack first.
+      //    Each erupts from its tiny start scale to a size slightly larger than
+      //    the one beneath it — and it sits above that one — so it sweeps out and
+      //    covers its predecessor, but only AFTER that predecessor has held the
+      //    screen for one REVEAL_BEAT. Each burst runs longer than a beat, so the
+      //    bursts overlap and it reads as one flowing bloom, not a slideshow.
       .addLabel("rev", "-=0.3")
-      // Each photo grows fast to its size then KEEPS creeping (long power3.out
-      // tails) — so none ever stops within the window. Different start sizes =>
-      // always nested, every edge visible. The smaller it starts, the FASTER it
-      // expands, so each rushes out to take its turn covering the one below it.
-      .to(frameImgs[0], { scale: 0.8, duration: 4.9, ease: "power3.out" }, "rev")
-      .to(frameImgs[1], { scale: 0.68, duration: 4.4, ease: "power3.out" }, "rev")
-      .to(frameImgs[2], { scale: 0.57, duration: 4.0, ease: "power3.out" }, "rev")
-      .to(frameImgs[3], { scale: 0.47, duration: 3.6, ease: "power3.out" }, "rev")
-      // once the front photo has grown to a reasonable size, IT *and its frame*
-      // grow to the FULL viewport so image 4 truly fills the screen (frame size
-      // animated inline, so it works regardless of the frame's base CSS). The
-      // other photos fade as image 4 covers them.
+      .to(frameImgs[0], { scale: FRAME_END_SCALES[0], duration: 1.6, ease: "power3.out" }, "rev")
+      .to(frameImgs[1], { scale: FRAME_END_SCALES[1], duration: 1.6, ease: "power3.out" }, `rev+=${REVEAL_BEAT}`)
+      .to(frameImgs[2], { scale: FRAME_END_SCALES[2], duration: 1.6, ease: "power3.out" }, `rev+=${(REVEAL_BEAT * 2).toFixed(3)}`)
+      .to(frameImgs[3], { scale: FRAME_END_SCALES[3], duration: 1.6, ease: "power3.out" }, `rev+=${(REVEAL_BEAT * 3).toFixed(3)}`)
+      // once the LAST photo has had its beat, IT *and its frame* grow to the FULL
+      // viewport so image 4 truly fills the screen (frame size animated inline, so
+      // it works regardless of the frame's base CSS). The others fade behind it.
       .to(
         frameImgs[3],
         { scale: 1, duration: 1.4, ease: "power2.inOut", overwrite: "auto" },
-        "rev+=1.9",
+        `rev+=${(REVEAL_BEAT * 4).toFixed(3)}`,
       )
       .to(
         frameEl,
         { width: "100vw", height: "100vh", duration: 1.4, ease: "power2.inOut" },
-        "rev+=1.9",
+        `rev+=${(REVEAL_BEAT * 4).toFixed(3)}`,
       )
       .to(
         [frameImgs[0], frameImgs[1], frameImgs[2]],
         { autoAlpha: 0, duration: 0.9, ease: "power2.in" },
-        "rev+=1.9",
+        `rev+=${(REVEAL_BEAT * 4).toFixed(3)}`,
       )
       // 5. hand off: fade the expanded clone to reveal the real hero (image 4)
-      .to(revealEl, { autoAlpha: 0, duration: 0.7, ease: "power2.inOut" }, "rev+=3.3")
+      .to(
+        revealEl,
+        { autoAlpha: 0, duration: 0.7, ease: "power2.inOut" },
+        `rev+=${(REVEAL_BEAT * 4 + 1.4).toFixed(3)}`,
+      )
       // 6. hero content reveal — wordmark, eyebrow, masked names, message,
       //    hashtag, CTA (top-to-bottom so the invitation "writes itself" in)
       .to(topbar, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=.5")
