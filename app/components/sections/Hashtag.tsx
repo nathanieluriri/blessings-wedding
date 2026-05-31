@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { motion } from "framer-motion";
@@ -6,7 +7,6 @@ import SectionShell, {
   SectionEyebrow,
   SectionTitle,
 } from "./SectionShell";
-import HashtagScene from "./HashtagScene";
 
 // Single-weight line-art icons (stroke = currentColor) so they sit naturally on
 // the cream background in the same visual language as the rest of the invite.
@@ -73,7 +73,14 @@ export default function Hashtag() {
         transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
         className="mx-auto mt-8 w-full max-w-xl"
       >
-        <HashtagScene className="hashtag-art w-full h-auto" />
+        <img
+          src="/scenes/hashtag.svg"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          className="hashtag-art w-full h-auto"
+        />
       </motion.div>
 
       <motion.div

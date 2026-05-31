@@ -8,10 +8,10 @@ import { useScrollLock } from "./ScrollLock";
 // Wedding photos served from /public/wedding. They cross-fade inside the frame
 // as it expands to full-bleed; the LAST one stays as the hero background.
 const WEDDING_IMAGES = [
-  "/wedding/1.png",
-  "/wedding/2.png",
-  "/wedding/3.png",
-  "/wedding/4.png",
+  "/wedding/1.webp",
+  "/wedding/2.webp",
+  "/wedding/3.webp",
+  "/wedding/4.webp",
 ];
 const HERO_IMAGE = WEDDING_IMAGES[WEDDING_IMAGES.length - 1];
 
@@ -100,6 +100,55 @@ function Monogram({ progress }: { progress: number }) {
 const REEL = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
 const REEL_SPANS = REEL.length; // 11
 
+// Line-art long-stem rose, echoing the reference poster: the stem is rooted at
+// the bottom-OUTER corner (so it reads as growing from the screen edge) and
+// sweeps up and inward to the bloom. Drawn left-oriented; the right copy is
+// mirrored in CSS. Each path has pathLength={1} so the intro can "draw" it on by
+// animating stroke-dashoffset 1 -> 0.
+const FLOWER_STROKES = [
+  // stem — curves up from the bottom-left corner to the bloom
+  "M18 430C70 380 58 300 96 258 128 222 120 192 150 150",
+  // bloom — outer silhouette
+  "M150 156C120 156 104 132 110 106 116 84 136 74 150 82 164 74 184 84 190 106 196 132 180 156 150 156Z",
+  // bloom — inner petal swirls
+  "M150 150C132 146 124 126 132 110 138 98 148 94 150 92",
+  "M150 150C168 146 176 126 168 110 162 98 152 94 150 92",
+  "M138 120C142 108 150 100 150 100 150 100 158 108 162 120",
+  "M150 150C150 130 150 112 150 96",
+  // sepals at the bloom base
+  "M150 156C144 166 136 170 130 168",
+  "M150 156C156 166 164 170 170 168",
+  // lower leaf (off the stem, pointing back toward the corner) + vein
+  "M62 341C40 352 22 346 14 326 36 318 56 326 62 340Z",
+  "M56 338C40 334 30 330 20 326",
+  // upper leaf (off the stem, reaching inward) + vein
+  "M124 206C150 214 170 206 178 184 154 178 134 188 124 202Z",
+  "M131 200C150 196 160 192 170 188",
+];
+
+const FLOWER_DOTS: [number, number, number][] = [
+  [34, 418, 2.4],
+  [16, 404, 1.8],
+  [46, 430, 2],
+  [26, 432, 1.6],
+  [54, 416, 1.6],
+];
+
+function HeroFlower({ side }: { side: "l" | "r" }) {
+  return (
+    <div className={`intro-flower intro-flower-${side}`} aria-hidden="true">
+      <svg viewBox="0 0 220 440" role="img" aria-hidden="true">
+        {FLOWER_STROKES.map((d, i) => (
+          <path key={i} className="flower-stroke" d={d} pathLength={1} />
+        ))}
+        {FLOWER_DOTS.map(([cx, cy, r], i) => (
+          <circle key={i} className="flower-dot" cx={cx} cy={cy} r={r} />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
 export default function OpeningSequence() {
   const [progress, setProgress] = useState(0);
   const [introDone, setIntroDone] = useState(false);
@@ -131,35 +180,29 @@ export default function OpeningSequence() {
     const revealEl = q(".intro-reveal-wrap");
     const frameEl = q(".intro-frame");
     const frameImgs = qa(".intro-frame img");
-    const reelTracks = qa(".intro-reel-track"); // [hundreds, tens, units]
-    const reelWraps = qa(".intro-reel");
+    const reelTracks = qa(".intro-reel-track"); // [tens, units]
     const words = qa(".intro-word span");
     const topbar = qa(".intro-topbar > *");
+    const eyebrow = q(".intro-eyebrow");
     const sub = q(".intro-sub");
+    const hash = q(".intro-hash");
     const cta = q(".intro-cta");
+    const flowers = qa(".intro-flower");
+    const flowerStrokes = qa(".flower-stroke");
+    const flowerDots = qa(".flower-dot");
 
     // Scroll-dial: feed CONTINUOUS values so the reels roll smoothly (an
     // odometer) instead of snapping. Units rolls fast; tens/hundreds roll only
     // as the lower wheel passes 9 -> 0. yPercent is relative to the 11-span
     // track, so -(val/11)*100 puts digit `val` (0..10) in the window.
+    // Two-digit scroll dial, 00 -> 99. Continuous values so the reels ROLL like
+    // an odometer (units fast; tens only as the units wheel passes 9). Both reels
+    // stay visible, so the start reads "00" and the finish reads "99".
     const updateDial = (c: number) => {
-      // Final stretch: resolve cleanly to "1 0 0". (A continuous odometer would
-      // wrap units+tens to 0 here while the hundreds digit hasn't appeared yet,
-      // which reads as "00".)
-      if (c >= 99.5) {
-        reelWraps[0].style.display = "inline-block";
-        reelWraps[1].style.display = "inline-block";
-        gsap.set(reelTracks[0], { yPercent: -(1 / REEL_SPANS) * 100 }); // 1
-        gsap.set(reelTracks[1], { yPercent: 0 }); // 0
-        gsap.set(reelTracks[2], { yPercent: 0 }); // 0
-        return;
-      }
-      const uVal = c % 10; // units roll continuously (the fast dial)
-      const tVal = Math.floor(c / 10) + Math.max(0, (c % 10) - 9); // tens roll at the wrap
-      reelWraps[0].style.display = "none"; // hundreds only at 100
-      reelWraps[1].style.display = c >= 10 ? "inline-block" : "none";
-      gsap.set(reelTracks[1], { yPercent: -(tVal / REEL_SPANS) * 100 });
-      gsap.set(reelTracks[2], { yPercent: -(uVal / REEL_SPANS) * 100 });
+      const uVal = c % 10;
+      const tVal = Math.floor(c / 10) + Math.max(0, (c % 10) - 9);
+      gsap.set(reelTracks[0], { yPercent: -(tVal / REEL_SPANS) * 100 }); // tens
+      gsap.set(reelTracks[1], { yPercent: -(uVal / REEL_SPANS) * 100 }); // units
     };
 
     const counter = { v: 0 };
@@ -169,15 +212,19 @@ export default function OpeningSequence() {
     // ---- initial states ----
     gsap.set(markEl, { autoAlpha: 0, y: 18, scale: 0.96 });
     gsap.set([counterEl, pctEl], { autoAlpha: 0, y: 12 });
-    gsap.set(frameEl, { autoAlpha: 0, scale: 0.86 });
-    // photos start small; they scale up and overlay in sequence. The FIRST one
-    // is visible from the start so the frame is never empty.
-    gsap.set(frameImgs, { autoAlpha: 0, scale: 0.5, transformOrigin: "50% 50%" });
-    gsap.set(frameImgs[0], { autoAlpha: 1 });
+    gsap.set(frameEl, { autoAlpha: 1 });
+    // every photo is a full-viewport layer, all visible from the start at a tiny
+    // centered scale; they expand simultaneously at different speeds.
+    gsap.set(frameImgs, { autoAlpha: 1, scale: 0.16, transformOrigin: "50% 50%" });
     // hero content waits for the hand-off
     gsap.set(words, { yPercent: 115 });
     gsap.set(topbar, { autoAlpha: 0, y: -10 });
-    gsap.set([sub, cta], { autoAlpha: 0, y: 14 });
+    gsap.set([eyebrow, sub, hash, cta], { autoAlpha: 0, y: 14 });
+    // flowers start un-drawn (dash fully offset) and invisible; they're drawn on
+    // during the hero reveal in lockstep with the message.
+    gsap.set(flowers, { autoAlpha: 0 });
+    gsap.set(flowerStrokes, { strokeDashoffset: 1 });
+    gsap.set(flowerDots, { autoAlpha: 0 });
 
     const tl = gsap.timeline({ onComplete: () => setIntroDone(true) });
     tlRef.current = tl;
@@ -190,15 +237,15 @@ export default function OpeningSequence() {
       .to(
         counter,
         {
-          v: 100,
+          v: 99,
           duration: 2.4,
           ease: "power2.inOut",
           onUpdate: () => {
             updateDial(counter.v);
-            setProgress(counter.v / 100);
+            setProgress(counter.v / 99); // trace still completes at the end
           },
           onComplete: () => {
-            updateDial(100); // guarantee the resting state reads "100"
+            updateDial(99); // resting state reads "99"
             setProgress(1);
           },
         },
@@ -208,29 +255,65 @@ export default function OpeningSequence() {
       .to([counterEl, pctEl], { autoAlpha: 0, y: -14, duration: 0.5, ease: "power2.in" }, "+=.2")
       .to(markEl, { autoAlpha: 0, y: -22, scale: 0.97, duration: 0.6, ease: "power2.in" }, "<")
       .to(preloader, { autoAlpha: 0, duration: 0.6 }, "-=.2")
-      // 4. frame + first photo appear together (never empty). The CONTAINER then
-      //    expands slowly while each photo scales up FASTER and overlays the
-      //    previous — cream borders keep them distinct. Image 4 lands last.
+      // 4. all four photos expand SIMULTANEOUSLY from tiny, at DIFFERENT speeds,
+      //    so they're always nested at different sizes (every edge visible) and
+      //    ease out / decelerate as they converge into a tight stack.
       .addLabel("rev", "-=0.3")
-      .to(frameEl, { autoAlpha: 1, scale: 1, duration: 0.6, ease: "power3.out" }, "rev")
+      // Each photo grows fast to its size then KEEPS creeping (long power3.out
+      // tails) — so none ever stops within the window. Different sizes => always
+      // nested, every edge visible.
+      .to(frameImgs[0], { scale: 0.8, duration: 4.5, ease: "power3.out" }, "rev")
+      .to(frameImgs[1], { scale: 0.68, duration: 4.7, ease: "power3.out" }, "rev")
+      .to(frameImgs[2], { scale: 0.57, duration: 4.9, ease: "power3.out" }, "rev")
+      .to(frameImgs[3], { scale: 0.47, duration: 4.4, ease: "power3.out" }, "rev")
+      // once the front photo has grown to a reasonable size, IT *and its frame*
+      // grow to the FULL viewport so image 4 truly fills the screen (frame size
+      // animated inline, so it works regardless of the frame's base CSS). The
+      // other photos fade as image 4 covers them.
+      .to(
+        frameImgs[3],
+        { scale: 1, duration: 1.4, ease: "power2.inOut", overwrite: "auto" },
+        "rev+=1.9",
+      )
       .to(
         frameEl,
-        { width: "100vw", height: "100vh", duration: 3.4, ease: "power1.inOut" },
-        "rev+=0.4",
+        { width: "100vw", height: "100vh", duration: 1.4, ease: "power2.inOut" },
+        "rev+=1.9",
       )
-      .to(frameImgs[0], { scale: 1, duration: 1.0, ease: "power3.out" }, "rev+=0.4")
-      .to(frameImgs[1], { autoAlpha: 1, scale: 1, duration: 0.8, ease: "power3.out" }, "rev+=1.05")
-      .to(frameImgs[2], { autoAlpha: 1, scale: 1, duration: 0.68, ease: "power3.out" }, "rev+=1.7")
-      .to(frameImgs[3], { autoAlpha: 1, scale: 1, duration: 0.58, ease: "power3.out" }, "rev+=2.3")
+      .to(
+        [frameImgs[0], frameImgs[1], frameImgs[2]],
+        { autoAlpha: 0, duration: 0.9, ease: "power2.in" },
+        "rev+=1.9",
+      )
       // 5. hand off: fade the expanded clone to reveal the real hero (image 4)
-      .to(revealEl, { autoAlpha: 0, duration: 0.8, ease: "power2.inOut" }, "rev+=3.9")
-      // 6. hero content reveal — wordmark, masked headline, sub, CTA
+      .to(revealEl, { autoAlpha: 0, duration: 0.7, ease: "power2.inOut" }, "rev+=3.3")
+      // 6. hero content reveal — wordmark, eyebrow, masked names, message,
+      //    hashtag, CTA (top-to-bottom so the invitation "writes itself" in)
       .to(topbar, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=.5")
-      .to(words, { yPercent: 0, duration: 1.0, ease: "power4.out", stagger: 0.12 }, "-=.55")
-      .to(sub, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=.5")
-      .to(cta, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out" }, "-=.55");
+      .to(eyebrow, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out" }, "-=.45")
+      .to(words, { yPercent: 0, duration: 1.0, ease: "power4.out", stagger: 0.12 }, "-=.4")
+      // flowers fade in faintly, then their strokes draw on like ink
+      .to(flowers, { autoAlpha: 0.62, duration: 0.5, ease: "power2.out" }, "-=.5")
+      .to(
+        flowerStrokes,
+        { strokeDashoffset: 0, duration: 1.5, ease: "power1.inOut", stagger: 0.03 },
+        "<",
+      )
+      .to(flowerDots, { autoAlpha: 1, duration: 0.4, stagger: 0.04 }, "-=.45")
+      .to(sub, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=.9")
+      .to(hash, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out" }, "-=.55")
+      .to(cta, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out" }, "-=.5");
+
+    // Failsafe: the scroll stays locked until the intro finishes, so if the
+    // timeline ever stalls (a slow/aborted asset, a hiccup), force the hand-off
+    // shortly after the intro's own runtime so the page can never lock up.
+    const failSafe = window.setTimeout(
+      () => setIntroDone(true),
+      (tl.duration() + 4) * 1000,
+    );
 
     return () => {
+      window.clearTimeout(failSafe);
       tl.kill();
       tlRef.current = null;
     };
@@ -250,9 +333,17 @@ export default function OpeningSequence() {
       {/* The hero (in normal flow) — wedding image 4 with the headline overlaid */}
       <section id="hero" className="intro-hero" aria-label="Wedding invitation">
         <div className="intro-hero-bg">
-          <img src={HERO_IMAGE} alt="Blessing & Justice" />
+          <img
+            src={HERO_IMAGE}
+            alt="Blessing & Justice"
+            fetchPriority="high"
+            decoding="async"
+          />
         </div>
         <div className="intro-veil" />
+
+        <HeroFlower side="l" />
+        <HeroFlower side="r" />
 
         <div className="intro-topbar">
           <div className="intro-wordmark">OFODIMMA</div>
@@ -263,26 +354,30 @@ export default function OpeningSequence() {
           </div>
         </div>
 
-        <div className="intro-headline" aria-hidden="true">
-          <div className="intro-word intro-w1">
-            <span>Blessing</span>
-          </div>
-          <div className="intro-word intro-w2">
-            <span>&amp; Justice</span>
-          </div>
-          <div className="intro-word intro-w3">
-            <span>19.12.26</span>
-          </div>
-          <div className="intro-word intro-w4">
-            <span>Acropolis Park · Apo</span>
-          </div>
-        </div>
-
-        <div className="intro-footer">
-          <p className="intro-sub">
-            We&rsquo;re getting married — and it would mean the world to
-            celebrate with you. Save the date, and RSVP below.
+        <div className="intro-invite">
+          <p className="intro-eyebrow">
+            You are cordially invited to
+            <br />
+            celebrate the wedding of
           </p>
+
+          <div className="intro-headline">
+            <div className="intro-word intro-name1">
+              <span>Blessing</span>
+            </div>
+            <div className="intro-word intro-name2">
+              <span>&amp; Justice</span>
+            </div>
+          </div>
+
+          <p className="intro-sub">
+            We would like to invite you to celebrate with us on the most special
+            day of our lives. It would be an honor to have you present at this
+            important moment.
+          </p>
+
+          <p className="intro-hash">#OFODIMMA</p>
+
           <button type="button" className="intro-cta" onClick={goRsvp}>
             RSVP
           </button>
@@ -302,7 +397,7 @@ export default function OpeningSequence() {
 
           <div className="intro-preloader" onClick={skip}>
             <div className="intro-counter" aria-live="polite">
-              {["h", "t", "u"].map((pos) => (
+              {["t", "u"].map((pos) => (
                 <span key={pos} className="intro-reel">
                   <span className="intro-reel-track">
                     {REEL.map((d, i) => (

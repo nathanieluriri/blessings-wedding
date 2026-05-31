@@ -9,8 +9,19 @@ import Registry from "./components/sections/Registry";
 import QnA from "./components/sections/QnA";
 import Countdown from "./components/sections/Countdown";
 import ThankYou from "./components/sections/ThankYou";
+import {
+  getWeddingDate,
+  getWeddingDateISO,
+  formatMonthDayOrdinal,
+} from "@/lib/settings";
 
-export default function Home() {
+export default async function Home() {
+  const [weddingDateISO, weddingDate] = await Promise.all([
+    getWeddingDateISO(),
+    getWeddingDate(),
+  ]);
+  const monthDay = formatMonthDayOrdinal(weddingDate);
+
   return (
     <main className="relative bg-[color:var(--cream)]">
       <OpeningSequence />
@@ -19,10 +30,10 @@ export default function Home() {
       <Location />
       <DressCode />
       <Hashtag />
-      <RSVP />
+      <RSVP monthDay={monthDay} />
       <Registry />
       <QnA />
-      <Countdown />
+      <Countdown weddingDate={weddingDateISO} />
       <ThankYou />
     </main>
   );

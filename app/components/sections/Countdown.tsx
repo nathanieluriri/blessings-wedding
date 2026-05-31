@@ -8,12 +8,12 @@ import SectionShell, {
   SectionTitle,
 } from "./SectionShell";
 
-const WEDDING_DATE = new Date("2026-12-19T14:30:00+01:00");
+const DEFAULT_WEDDING_DATE = "2026-12-19T14:30:00+01:00";
 
 type Parts = { days: number; hours: number; minutes: number; seconds: number };
 
-function getParts(now: number): Parts {
-  const diff = Math.max(0, WEDDING_DATE.getTime() - now);
+function getParts(now: number, target: number): Parts {
+  const diff = Math.max(0, target - now);
   const days = Math.floor(diff / 86_400_000);
   const hours = Math.floor((diff / 3_600_000) % 24);
   const minutes = Math.floor((diff / 60_000) % 60);
@@ -61,24 +61,32 @@ function CountBox({
 
 const ZERO_PARTS: Parts = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-export default function Countdown() {
+export default function Countdown({
+  weddingDate = DEFAULT_WEDDING_DATE,
+}: {
+  weddingDate?: string;
+}) {
   const [parts, setParts] = useState<Parts>(ZERO_PARTS);
 
   useEffect(() => {
-    let raf = 0;
-    let lastSecond = -1;
-    const tick = () => {
-      const now = Date.now();
-      const sec = Math.floor(now / 1000);
-      if (sec !== lastSecond) {
-        lastSecond = sec;
-        setParts(getParts(now));
-      }
-      raf = requestAnimationFrame(tick);
+    const target = new Date(weddingDate).getTime();
+    // A 1s interval is all this needs — the old per-frame rAF loop woke the main
+    // thread ~60x/s just to repaint once a second. Sync the first tick to the
+    // next whole second so the seconds digit flips cleanly.
+    setParts(getParts(Date.now(), target));
+    let interval = 0;
+    const startAligned = window.setTimeout(() => {
+      setParts(getParts(Date.now(), target));
+      interval = window.setInterval(
+        () => setParts(getParts(Date.now(), target)),
+        1000
+      );
+    }, 1000 - (Date.now() % 1000));
+    return () => {
+      window.clearTimeout(startAligned);
+      if (interval) window.clearInterval(interval);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [weddingDate]);
 
   return (
     <SectionShell

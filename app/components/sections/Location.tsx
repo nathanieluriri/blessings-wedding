@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { motion } from "framer-motion";
@@ -6,7 +7,6 @@ import SectionShell, {
   SectionEyebrow,
   SectionTitle,
 } from "./SectionShell";
-import VenueScene from "./VenueScene";
 
 export default function Location() {
   return (
@@ -31,7 +31,14 @@ export default function Location() {
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         className="mx-auto mt-12 max-w-4xl"
       >
-        <VenueScene className="w-full h-auto text-[color:var(--burgundy)]" />
+        <img
+          src="/scenes/venue.svg"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          className="venue-art w-full h-auto"
+        />
       </motion.div>
 
       <p className="mx-auto mt-10 max-w-md font-serif text-2xl sm:text-3xl leading-snug text-[color:var(--burgundy)]">

@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactLenis } from "lenis/react";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { ScrollLockProvider } from "./ScrollLock";
 
@@ -9,6 +10,15 @@ type SmoothScrollProps = {
 };
 
 export default function SmoothScroll({ children }: SmoothScrollProps) {
+  const pathname = usePathname();
+
+  // The admin dashboard uses native scrolling — Lenis' root scroll hijacking
+  // conflicts with Radix dialog/scroll-lock behaviour. Keep it on the public
+  // marketing site only.
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/login/admin")) {
+    return <>{children}</>;
+  }
+
   return (
     <ReactLenis
       root

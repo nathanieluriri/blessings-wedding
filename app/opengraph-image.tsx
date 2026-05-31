@@ -1,11 +1,13 @@
 import { ImageResponse } from "next/og";
+import { getWeddingDate, formatNumericDots } from "@/lib/settings";
 
 export const alt =
-  "Blessing & Justice — A Wedding Invitation. 19 December 2026 · Acropolis Park, Apo. #OfoDiMma";
+  "Blessing & Justice — A Wedding Invitation · Acropolis Park, Apo. #OfoDiMma";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function OpengraphImage() {
+  const numericDate = formatNumericDots(await getWeddingDate());
   return new ImageResponse(
     (
       <div
@@ -119,7 +121,7 @@ export default async function OpengraphImage() {
               display: "flex",
             }}
           >
-            19 · 12 · 2026
+            {numericDate}
           </div>
           <div
             style={{

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { motion } from "framer-motion";
@@ -6,7 +7,6 @@ import SectionShell, {
   SectionEyebrow,
   SectionTitle,
 } from "./SectionShell";
-import DressCodeScene from "./DressCodeScene";
 
 // TODO: replace with the couple's actual Pinterest board URL once supplied.
 const INSPIRATION_URL = "https://www.pinterest.com/search/pins/?q=colourful%20wedding%20guest%20outfits";
@@ -40,7 +40,14 @@ export default function DressCode() {
         transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
         className="mx-auto mt-12 w-full max-w-4xl"
       >
-        <DressCodeScene className="dresscode-art w-full h-auto" />
+        <img
+          src="/scenes/dress-code.svg"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          className="dresscode-art w-full h-auto"
+        />
       </motion.div>
 
       <p className="mt-12 font-serif text-2xl sm:text-3xl text-[color:var(--burgundy)]">

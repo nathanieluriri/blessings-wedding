@@ -10,19 +10,39 @@ import SectionShell, {
 
 type Attendance = "yes" | "no" | null;
 
-export default function RSVP() {
+export default function RSVP({ monthDay = "December 19th" }: { monthDay?: string }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [attending, setAttending] = useState<Attendance>(null);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const canSubmit = name.trim().length > 1 && attending !== null;
+  const canSubmit = name.trim().length > 1 && attending !== null && !submitting;
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!canSubmit) return;
-    setSubmitted(true);
+    if (name.trim().length <= 1 || attending === null || submitting) return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/rsvp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, attending, message }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? "Something went wrong. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setError("Could not reach the server. Please try again.");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -131,6 +151,12 @@ export default function RSVP() {
               />
             </label>
 
+            {error && (
+              <p className="mt-5 text-center font-sans text-sm text-[color:var(--burgundy)]">
+                {error}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={!canSubmit}
@@ -148,7 +174,7 @@ export default function RSVP() {
               >
                 <path d="M2 21l21-9L2 3v7l15 2-15 2z" />
               </svg>
-              Confirm
+              {submitting ? "Sending…" : "Confirm"}
             </button>
           </motion.form>
         ) : (
@@ -167,7 +193,7 @@ export default function RSVP() {
             </p>
             <p className="mt-4 font-serif italic text-[color:var(--burgundy-soft)]/85">
               {attending === "yes"
-                ? `See you on December 19th, ${name.split(" ")[0] || "friend"}.`
+                ? `See you on ${monthDay}, ${name.split(" ")[0] || "friend"}.`
                 : "You will be missed — sending love your way."}
             </p>
           </motion.div>

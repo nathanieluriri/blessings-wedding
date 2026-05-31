@@ -92,7 +92,9 @@ function ScratchCard({ label, aria, delay, onReveal }: ScratchCardProps) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = LOGICAL_SIZE * dpr;
     canvas.height = LOGICAL_SIZE * dpr;
-    const ctx = canvas.getContext("2d");
+    // willReadFrequently: the reveal check reads ImageData every ~40ms while the
+    // user scratches, so keep this canvas CPU-side for cheap repeated reads.
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     paintForeground(ctx);
@@ -276,8 +278,19 @@ type ConfettiPiece = {
 
 function ConfettiPieces() {
   const [pieces] = useState<ConfettiPiece[]>(() => {
+    // ConfettiBurst only mounts on the client (after the reveal), so reading
+    // window here is safe. Fewer pieces on phones keeps the burst smooth — each
+    // piece is its own animated, layer-promoted SVG.
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const count = reduce
+      ? 0
+      : typeof window !== "undefined" && window.innerWidth < 640
+        ? 28
+        : 48;
     const next: ConfettiPiece[] = [];
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < count; i++) {
       next.push({
         i,
         left: Math.random() * 100,
