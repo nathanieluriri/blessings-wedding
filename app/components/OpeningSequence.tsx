@@ -208,8 +208,6 @@ export default function OpeningSequence({
     const topbar = qa(".intro-topbar > *");
     const eyebrow = q(".intro-eyebrow");
     const sub = q(".intro-sub");
-    const hash = q(".intro-hash");
-    const cta = q(".intro-cta");
     const flowers = qa(".intro-flower");
     const flowerStrokes = qa(".flower-stroke");
     const flowerDots = qa(".flower-dot");
@@ -247,7 +245,7 @@ export default function OpeningSequence({
     // hero content waits for the hand-off
     gsap.set(words, { yPercent: 115 });
     gsap.set(topbar, { autoAlpha: 0, y: -10 });
-    gsap.set([eyebrow, sub, hash, cta], { autoAlpha: 0, y: 14 });
+    gsap.set([eyebrow, sub], { autoAlpha: 0, y: 14 });
     // flowers start un-drawn (dash fully offset) and invisible; they're drawn on
     // during the hero reveal in lockstep with the message.
     gsap.set(flowers, { autoAlpha: 0 });
@@ -331,9 +329,7 @@ export default function OpeningSequence({
         "<",
       )
       .to(flowerDots, { autoAlpha: 1, duration: 0.4, stagger: 0.04 }, "-=.45")
-      .to(sub, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=.9")
-      .to(hash, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out" }, "-=.55")
-      .to(cta, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out" }, "-=.5");
+      .to(sub, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=.9");
 
     // Failsafe: the scroll stays locked until the intro finishes, so if the
     // timeline ever stalls (a slow/aborted asset, a hiccup), force the hand-off
@@ -355,9 +351,6 @@ export default function OpeningSequence({
     if (tlRef.current) tlRef.current.progress(1);
     else setIntroDone(true);
   };
-
-  const goRsvp = () =>
-    document.getElementById("rsvp")?.scrollIntoView({ behavior: "smooth" });
 
   return (
     <div ref={rootRef}>
@@ -420,12 +413,6 @@ export default function OpeningSequence({
             day of our lives. It would be an honor to have you present at this
             important moment.
           </p>
-
-          <p className="intro-hash">#OFODIMMA</p>
-
-          <button type="button" className="intro-cta" onClick={goRsvp}>
-            RSVP
-          </button>
         </div>
       </section>
 

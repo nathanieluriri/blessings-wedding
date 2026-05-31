@@ -40,6 +40,7 @@ export interface RsvpDoc {
 export interface SettingsDoc {
   _id: "global";
   weddingDate: string; // ISO string
+  rsvpDeadline?: string; // ISO string; defaults to DEFAULT_RSVP_DEADLINE when unset
   updatedAt: Date;
   updatedBy?: string;
 }

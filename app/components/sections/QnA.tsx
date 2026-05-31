@@ -13,49 +13,54 @@ const RSVP_EMAIL = "theofokansis@gmail.com";
 
 type QA = { q: string; a: ReactNode };
 
-const QUESTIONS: QA[] = [
-  {
-    q: "When is the RSVP deadline?",
-    // TODO: confirm the deadline with the couple — the RSVP section currently
-    // says 30 November 2026.
-    a: (
-      <>
-        Please RSVP by <strong>30 November 2026</strong> so we can have an
-        accurate headcount. :)
-      </>
-    ),
-  },
-  {
-    q: "Can I bring a plus one?",
-    // TODO: confirm the couple's plus-one policy.
-    a: (
-      <>
-        To help us plan, admission is strictly by invitation. If a plus one has
-        been reserved for you, it will be noted on your invitation. If
-        you&rsquo;re unsure, just reach out and we&rsquo;ll be happy to confirm.
-      </>
-    ),
-  },
-  {
-    q: "Whom should I call with questions?",
-    // TODO: add a contact name + phone number if the couple would like one
-    // listed alongside the email.
-    a: (
-      <>
-        For anything at all, email us at{" "}
-        <a
-          href={`mailto:${RSVP_EMAIL}`}
-          className="font-medium text-[color:var(--burgundy)] underline decoration-[color:var(--burgundy)]/30 underline-offset-4 hover:decoration-[color:var(--burgundy)]"
-        >
-          {RSVP_EMAIL}
-        </a>{" "}
-        and we&rsquo;ll get right back to you.
-      </>
-    ),
-  },
-];
+export default function QnA({
+  rsvpDeadline,
+}: {
+  // The RSVP deadline string from the backend, shared with the RSVP section so
+  // the two can never disagree.
+  rsvpDeadline: string;
+}) {
+  const QUESTIONS: QA[] = [
+    {
+      q: "When is the RSVP deadline?",
+      a: (
+        <>
+          Please RSVP by <strong>{rsvpDeadline}</strong> so we can have an
+          accurate headcount. :)
+        </>
+      ),
+    },
+    {
+      q: "Can I bring a plus one?",
+      // TODO: confirm the couple's plus-one policy.
+      a: (
+        <>
+          To help us plan, admission is strictly by invitation. If a plus one
+          has been reserved for you, it will be noted on your invitation. If
+          you&rsquo;re unsure, just reach out and we&rsquo;ll be happy to
+          confirm.
+        </>
+      ),
+    },
+    {
+      q: "Whom should I call with questions?",
+      // TODO: add a contact name + phone number if the couple would like one
+      // listed alongside the email.
+      a: (
+        <>
+          For anything at all, email us at{" "}
+          <a
+            href={`mailto:${RSVP_EMAIL}`}
+            className="font-medium text-[color:var(--burgundy)] underline decoration-[color:var(--burgundy)]/30 underline-offset-4 hover:decoration-[color:var(--burgundy)]"
+          >
+            {RSVP_EMAIL}
+          </a>{" "}
+          and we&rsquo;ll get right back to you.
+        </>
+      ),
+    },
+  ];
 
-export default function QnA() {
   return (
     <SectionShell
       id="qna"

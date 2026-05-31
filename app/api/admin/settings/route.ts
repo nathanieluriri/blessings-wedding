@@ -17,7 +17,9 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const raw = (body as Record<string, unknown>)?.weddingDate;
+  const fields = body as Record<string, unknown>;
+
+  const raw = fields?.weddingDate;
   if (typeof raw !== "string") {
     return NextResponse.json(
       { error: "A wedding date is required." },
@@ -33,12 +35,32 @@ export async function PATCH(request: Request) {
     );
   }
 
+  // RSVP deadline is optional; validated only when supplied.
+  const rawDeadline = fields?.rsvpDeadline;
+  let deadline: Date | undefined;
+  if (rawDeadline !== undefined && rawDeadline !== null && rawDeadline !== "") {
+    if (typeof rawDeadline !== "string") {
+      return NextResponse.json(
+        { error: "That RSVP deadline is invalid." },
+        { status: 400 }
+      );
+    }
+    deadline = new Date(rawDeadline);
+    if (Number.isNaN(deadline.getTime())) {
+      return NextResponse.json(
+        { error: "That RSVP deadline is invalid." },
+        { status: 400 }
+      );
+    }
+  }
+
   const col = await settingsCollection();
   await col.updateOne(
     { _id: "global" },
     {
       $set: {
         weddingDate: date.toISOString(),
+        ...(deadline ? { rsvpDeadline: deadline.toISOString() } : {}),
         updatedAt: new Date(),
         updatedBy: admin.email,
       },
@@ -48,5 +70,9 @@ export async function PATCH(request: Request) {
 
   revalidateTag(WEDDING_SETTINGS_TAG, "max");
 
-  return NextResponse.json({ ok: true, weddingDate: date.toISOString() });
+  return NextResponse.json({
+    ok: true,
+    weddingDate: date.toISOString(),
+    ...(deadline ? { rsvpDeadline: deadline.toISOString() } : {}),
+  });
 }

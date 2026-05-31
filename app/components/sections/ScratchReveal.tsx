@@ -20,11 +20,9 @@ const REVEAL_THRESHOLD = 0.16;
 const SAMPLE_INTERVAL_MS = 40;
 const LOGICAL_SIZE = 220;
 
-const CARDS: { label: string; aria: string }[] = [
-  { label: "19", aria: "day" },
-  { label: "Dec", aria: "month" },
-  { label: "2026", aria: "year" },
-];
+// The reveal always has three hearts (day / month / year); their labels come
+// from the backend wedding date at render time.
+const CARD_COUNT = 3;
 
 const CONFETTI_COLORS = [
   "#5a1a1a",
@@ -346,15 +344,32 @@ function ConfettiBurst({ active }: { active: boolean }) {
 
 type Phase = "idle" | "engaged" | "complete";
 
-export default function ScratchReveal() {
+export default function ScratchReveal({
+  day,
+  month,
+  year,
+}: {
+  // The wedding day / short-month / year, derived from the backend wedding date
+  // by the server page — the single source the whole site shares.
+  day: string;
+  month: string;
+  year: string;
+}) {
+  // Built from the backend wedding date passed down by the server component, so
+  // the scratched date always matches the countdown, thank-you card and metadata.
+  const CARDS: { label: string; aria: string }[] = [
+    { label: day, aria: "day" },
+    { label: month, aria: "month" },
+    { label: year, aria: "year" },
+  ];
   const [revealedCount, setRevealedCount] = useState(0);
   const [phase, setPhase] = useState<Phase>("idle");
-  const allRevealed = revealedCount >= CARDS.length;
+  const allRevealed = revealedCount >= CARD_COUNT;
   const lenis = useLenis();
   const sectionRef = useRef<HTMLElement | null>(null);
 
   const handleReveal = useCallback(() => {
-    setRevealedCount((n) => Math.min(CARDS.length, n + 1));
+    setRevealedCount((n) => Math.min(CARD_COUNT, n + 1));
   }, []);
 
   useScrollLock("scratch-reveal", phase === "engaged" && !allRevealed);

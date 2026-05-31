@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display, Fraunces } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "./components/SmoothScroll";
-import { getWeddingDate, formatLongDate } from "@/lib/settings";
+import { getWeddingDate, formatLongDate, formatYear } from "@/lib/settings";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -35,7 +35,9 @@ const SITE_URL =
 const TITLE = "Blessing & Justice — A Wedding Invitation | #OfoDiMma";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const longDate = formatLongDate(await getWeddingDate());
+  const weddingDate = await getWeddingDate();
+  const longDate = formatLongDate(weddingDate);
+  const weddingYear = formatYear(weddingDate);
   const description = `Join us at Acropolis Park, Apo on ${longDate} as Blessing & Justice say “I do.” A celebration of love, colour, and Igbo heritage. #OfoDiMma`;
 
   return {
@@ -55,7 +57,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "#OfoDiMma",
       "Ofokansi",
       "Mmayen",
-      "Nigerian wedding 2026",
+      `Nigerian wedding ${weddingYear}`,
       "Igbo wedding",
       "Acropolis Park Apo",
       "Abuja wedding",
@@ -122,6 +124,9 @@ function buildEventJsonLd(weddingDate: Date, description: string) {
     new Date(start.getTime() + h * 3_600_000).toISOString();
   // Reception runs to roughly midnight (~9.5h after the ceremony begins).
   const end = addHours(9.5);
+  // Invitations are valid from the start of the wedding year, derived from the
+  // backend date so it tracks any change rather than being a stray literal.
+  const weddingYear = formatYear(weddingDate);
 
   return {
     "@context": "https://schema.org",
@@ -166,7 +171,7 @@ function buildEventJsonLd(weddingDate: Date, description: string) {
       price: "0",
       priceCurrency: "NGN",
       availability: "https://schema.org/InviteOnly",
-      validFrom: "2026-01-01T00:00:00+01:00",
+      validFrom: `${weddingYear}-01-01T00:00:00+01:00`,
     },
   } as const;
 }

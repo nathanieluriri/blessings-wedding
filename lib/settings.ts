@@ -13,6 +13,9 @@ export const SOCIAL_SETTINGS_TAG = "social-settings";
 // Fallback used before anything is saved in the DB (matches the original
 // hardcoded value). Africa/Lagos is +01:00 year-round (no DST).
 export const DEFAULT_WEDDING_DATE = "2026-12-19T14:30:00+01:00";
+// RSVP deadline fallback. Stored at noon Lagos so it never displays as the
+// prior day regardless of the viewer's timezone.
+export const DEFAULT_RSVP_DEADLINE = "2026-11-30T12:00:00+01:00";
 const TZ = "Africa/Lagos";
 
 // Cached read, invalidated by revalidateTag(WEDDING_SETTINGS_TAG) on update.
@@ -31,12 +34,36 @@ const readWeddingDateISO = unstable_cache(
   { tags: [WEDDING_SETTINGS_TAG] }
 );
 
+// RSVP deadline lives in the same `global` settings doc and is updated by the
+// same admin form, so it shares WEDDING_SETTINGS_TAG for invalidation.
+const readRsvpDeadlineISO = unstable_cache(
+  async (): Promise<string> => {
+    try {
+      const col = await settingsCollection();
+      const doc = await col.findOne({ _id: "global" });
+      return doc?.rsvpDeadline ?? DEFAULT_RSVP_DEADLINE;
+    } catch {
+      return DEFAULT_RSVP_DEADLINE;
+    }
+  },
+  ["rsvp-deadline"],
+  { tags: [WEDDING_SETTINGS_TAG] }
+);
+
 export async function getWeddingDateISO(): Promise<string> {
   return readWeddingDateISO();
 }
 
 export async function getWeddingDate(): Promise<Date> {
   return new Date(await readWeddingDateISO());
+}
+
+export async function getRsvpDeadlineISO(): Promise<string> {
+  return readRsvpDeadlineISO();
+}
+
+export async function getRsvpDeadline(): Promise<Date> {
+  return new Date(await readRsvpDeadlineISO());
 }
 
 // ── Social links ───────────────────────────────────────────────────────────
@@ -94,6 +121,14 @@ function ordinal(n: number): string {
   return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
 }
 
+/** e.g. "2026" — the wedding year in West Africa Time. */
+export function formatYear(date: Date): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: TZ,
+    year: "numeric",
+  }).format(date);
+}
+
 /** e.g. "19 December 2026" */
 export function formatLongDate(date: Date): string {
   return new Intl.DateTimeFormat("en-GB", {
@@ -109,6 +144,31 @@ export function formatNumericDots(date: Date): string {
   const { day, month, year } = parts(date);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${pad(day)} · ${pad(month)} · ${year}`;
+}
+
+/** e.g. "19 . 12 . 2026" — period-separated variant used on the thank-you card. */
+export function formatNumericPeriods(date: Date): string {
+  const { day, month, year } = parts(date);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(day)} . ${pad(month)} . ${year}`;
+}
+
+/**
+ * Day / short-month / year split for the scratch-reveal hearts, e.g.
+ * { day: "19", month: "Dec", year: "2026" }. Day/year are left unpadded so a
+ * single-digit day reads "9" on the card rather than "09".
+ */
+export function formatRevealParts(date: Date): {
+  day: string;
+  month: string;
+  year: string;
+} {
+  const { day, year } = parts(date);
+  const month = new Intl.DateTimeFormat("en-GB", {
+    timeZone: TZ,
+    month: "short",
+  }).format(date);
+  return { day: String(day), month, year: String(year) };
 }
 
 /** e.g. "December 19th" */

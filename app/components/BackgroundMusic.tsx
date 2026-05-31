@@ -82,20 +82,39 @@ export default function BackgroundMusic({
       });
   }, [song, rampVolume]);
 
-  // Begin on the first user gesture anywhere on the page.
+  // Begin on the guest's first user gesture anywhere on the page. We must
+  // keep retrying until playback ACTUALLY starts: on mobile, a scroll/swipe's
+  // `touchstart`/`pointerdown` does not grant the transient user activation
+  // that audio.play() needs — only `touchend`/`pointerup`/`click`/`keydown`
+  // do. So we listen for all of them and only detach once the element fires
+  // `playing`. (Using `once` here was the bug: the first blocked attempt on
+  // mobile removed every listener, so it never retried.)
   useEffect(() => {
     if (!song) return;
+    const audio = audioRef.current;
+    // Order matters: activation-granting events first so a scroll that ends in
+    // a touchend/pointerup unlocks audio.
+    const events = [
+      "touchend",
+      "pointerup",
+      "click",
+      "keydown",
+      "pointerdown",
+      "touchstart",
+    ] as const;
     const onGesture = () => start();
-    const opts = { once: true, passive: true } as const;
-    window.addEventListener("pointerdown", onGesture, opts);
-    window.addEventListener("keydown", onGesture, opts);
-    window.addEventListener("touchstart", onGesture, opts);
+    const opts = { passive: true } as const;
+    events.forEach((e) => window.addEventListener(e, onGesture, opts));
+    const detach = () =>
+      events.forEach((e) => window.removeEventListener(e, onGesture));
+    // Stop listening only once we're truly playing, not merely on first attempt.
+    const onPlaying = () => detach();
+    audio?.addEventListener("playing", onPlaying);
     // Reveal the control even without a gesture so guests can choose to play.
     const revealTimer = window.setTimeout(() => setReady(true), 2500);
     return () => {
-      window.removeEventListener("pointerdown", onGesture);
-      window.removeEventListener("keydown", onGesture);
-      window.removeEventListener("touchstart", onGesture);
+      detach();
+      audio?.removeEventListener("playing", onPlaying);
       window.clearTimeout(revealTimer);
     };
   }, [song, start]);

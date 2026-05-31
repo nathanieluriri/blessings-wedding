@@ -13,35 +13,49 @@ import ThankYou from "./components/sections/ThankYou";
 import {
   getWeddingDate,
   getWeddingDateISO,
+  getRsvpDeadline,
   formatMonthDayOrdinal,
+  formatNumericPeriods,
+  formatLongDate,
+  formatRevealParts,
   getVisibleSocialLinks,
 } from "@/lib/settings";
 import { getActivePublicSong } from "@/lib/music/read";
 
 export default async function Home() {
-  const [weddingDateISO, weddingDate, socialLinks, activeSong] =
+  const [weddingDateISO, weddingDate, rsvpDeadlineDate, socialLinks, activeSong] =
     await Promise.all([
       getWeddingDateISO(),
       getWeddingDate(),
+      getRsvpDeadline(),
       getVisibleSocialLinks(),
       getActivePublicSong(),
     ]);
+  // Every public date string is derived from the backend values above, so the
+  // reveal, thank-you card, countdown, RSVP and Q&A can never drift apart.
   const monthDay = formatMonthDayOrdinal(weddingDate);
+  const revealParts = formatRevealParts(weddingDate);
+  const numericDate = formatNumericPeriods(weddingDate);
+  const rsvpDeadline = formatLongDate(rsvpDeadlineDate);
 
   return (
     <main className="relative bg-[color:var(--cream)]">
       <BackgroundMusic song={activeSong} />
       <OpeningSequence socialLinks={socialLinks} />
-      <ScratchReveal />
+      <ScratchReveal
+        day={revealParts.day}
+        month={revealParts.month}
+        year={revealParts.year}
+      />
       <Itinerary />
       <Location />
       <DressCode />
       <Hashtag />
-      <RSVP monthDay={monthDay} />
+      <RSVP monthDay={monthDay} rsvpDeadline={rsvpDeadline} />
       <Registry />
-      <QnA />
+      <QnA rsvpDeadline={rsvpDeadline} />
       <Countdown weddingDate={weddingDateISO} />
-      <ThankYou />
+      <ThankYou numericDate={numericDate} />
     </main>
   );
 }

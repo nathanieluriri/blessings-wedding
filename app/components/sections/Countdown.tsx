@@ -8,8 +8,6 @@ import SectionShell, {
   SectionTitle,
 } from "./SectionShell";
 
-const DEFAULT_WEDDING_DATE = "2026-12-19T14:30:00+01:00";
-
 type Parts = { days: number; hours: number; minutes: number; seconds: number };
 
 function getParts(now: number, target: number): Parts {
@@ -62,9 +60,11 @@ function CountBox({
 const ZERO_PARTS: Parts = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
 export default function Countdown({
-  weddingDate = DEFAULT_WEDDING_DATE,
+  weddingDate,
 }: {
-  weddingDate?: string;
+  // Required: the ISO wedding date from the backend (passed by the server page),
+  // so the countdown target can never diverge from the rest of the site.
+  weddingDate: string;
 }) {
   const [parts, setParts] = useState<Parts>(ZERO_PARTS);
 

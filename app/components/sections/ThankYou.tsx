@@ -2,7 +2,12 @@
 
 import { motion } from "framer-motion";
 
-export default function ThankYou() {
+export default function ThankYou({
+  numericDate,
+}: {
+  // "19 . 12 . 2026" — the backend wedding date, formatted by the server page.
+  numericDate: string;
+}) {
   return (
     <section
       id="thank-you"
@@ -54,7 +59,7 @@ export default function ThankYou() {
             </div>
 
             <p className="mt-10 font-sans text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[color:var(--burgundy-soft)]/70">
-              #OfoDiMma &middot; 19 . 12 . 2026
+              #OfoDiMma &middot; {numericDate}
             </p>
           </div>
         </div>

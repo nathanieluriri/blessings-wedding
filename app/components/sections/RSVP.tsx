@@ -10,7 +10,16 @@ import SectionShell, {
 
 type Attendance = "yes" | "no" | null;
 
-export default function RSVP({ monthDay = "December 19th" }: { monthDay?: string }) {
+export default function RSVP({
+  monthDay,
+  rsvpDeadline,
+}: {
+  // Both derived from the backend by the server page: monthDay (e.g.
+  // "December 19th") from the wedding date, rsvpDeadline (e.g. "30 November
+  // 2026") from the deadline setting.
+  monthDay: string;
+  rsvpDeadline: string;
+}) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [attending, setAttending] = useState<Attendance>(null);
@@ -56,7 +65,7 @@ export default function RSVP({ monthDay = "December 19th" }: { monthDay?: string
         <SectionTitle className="mt-4">Confirm your attendance</SectionTitle>
         <SectionDivider />
         <p className="mx-auto max-w-xl font-serif italic text-base sm:text-lg text-[color:var(--burgundy-soft)]/80">
-          Please let us know by 30 November 2026.
+          Please let us know by {rsvpDeadline}.
         </p>
         <p className="mx-auto mt-3 max-w-xl font-sans text-sm text-[color:var(--burgundy-soft)]/80">
           Prefer email? RSVP to{" "}
