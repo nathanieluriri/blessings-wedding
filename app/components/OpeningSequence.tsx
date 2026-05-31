@@ -17,6 +17,13 @@ const WEDDING_IMAGES = [
 ];
 const HERO_IMAGE = WEDDING_IMAGES[WEDDING_IMAGES.length - 1];
 
+// Each photo starts at its OWN size (bottom-of-stack largest -> front-most
+// smallest) instead of all sharing one scale. The steps are ~10x apart, so each
+// inner photo erupts from almost a single point: image 1 is the backdrop, then
+// 2/3/4 burst out in turn, each visible for a beat before the next grows out and
+// covers it. Index matches DOM order in .intro-frame.
+const FRAME_START_SCALES = [0.46, 0.01, 0.0001, 0.000001];
+
 // ease-in-out (cubic). Endpoints are exactly 0 and 1, so easing the trace never
 // shifts where a path starts/finishes — the sync points are preserved.
 const easeInOut = (t: number) =>
@@ -219,9 +226,14 @@ export default function OpeningSequence({
     gsap.set(markEl, { autoAlpha: 0, y: 18, scale: 0.96 });
     gsap.set([counterEl, pctEl], { autoAlpha: 0, y: 12 });
     gsap.set(frameEl, { autoAlpha: 1 });
-    // every photo is a full-viewport layer, all visible from the start at a tiny
-    // centered scale; they expand simultaneously at different speeds.
-    gsap.set(frameImgs, { autoAlpha: 1, scale: 0.16, transformOrigin: "50% 50%" });
+    // every photo is a full-viewport layer; each starts at its OWN small size
+    // (front-most smallest), so from the first frame they're nested and every
+    // image is visible before the one above grows out over it.
+    gsap.set(frameImgs, {
+      autoAlpha: 1,
+      scale: (i: number) => FRAME_START_SCALES[i] ?? 0.1,
+      transformOrigin: "50% 50%",
+    });
     // hero content waits for the hand-off
     gsap.set(words, { yPercent: 115 });
     gsap.set(topbar, { autoAlpha: 0, y: -10 });
@@ -266,12 +278,13 @@ export default function OpeningSequence({
       //    ease out / decelerate as they converge into a tight stack.
       .addLabel("rev", "-=0.3")
       // Each photo grows fast to its size then KEEPS creeping (long power3.out
-      // tails) — so none ever stops within the window. Different sizes => always
-      // nested, every edge visible.
-      .to(frameImgs[0], { scale: 0.8, duration: 4.5, ease: "power3.out" }, "rev")
-      .to(frameImgs[1], { scale: 0.68, duration: 4.7, ease: "power3.out" }, "rev")
-      .to(frameImgs[2], { scale: 0.57, duration: 4.9, ease: "power3.out" }, "rev")
-      .to(frameImgs[3], { scale: 0.47, duration: 4.4, ease: "power3.out" }, "rev")
+      // tails) — so none ever stops within the window. Different start sizes =>
+      // always nested, every edge visible. The smaller it starts, the FASTER it
+      // expands, so each rushes out to take its turn covering the one below it.
+      .to(frameImgs[0], { scale: 0.8, duration: 4.9, ease: "power3.out" }, "rev")
+      .to(frameImgs[1], { scale: 0.68, duration: 4.4, ease: "power3.out" }, "rev")
+      .to(frameImgs[2], { scale: 0.57, duration: 4.0, ease: "power3.out" }, "rev")
+      .to(frameImgs[3], { scale: 0.47, duration: 3.6, ease: "power3.out" }, "rev")
       // once the front photo has grown to a reasonable size, IT *and its frame*
       // grow to the FULL viewport so image 4 truly fills the screen (frame size
       // animated inline, so it works regardless of the frame's base CSS). The
