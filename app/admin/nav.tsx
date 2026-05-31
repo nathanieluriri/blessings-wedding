@@ -9,6 +9,7 @@ import {
   BellIcon,
   ShieldIcon,
   SettingsIcon,
+  Music2Icon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLinkContent, BottomNavLinkContent } from "./nav-progress";
@@ -23,6 +24,7 @@ export const LINKS = [
     short: "Alerts",
     icon: BellIcon,
   },
+  { href: "/admin/music", label: "Music", short: "Music", icon: Music2Icon },
   { href: "/admin/security", label: "Security", short: "Security", icon: ShieldIcon },
   { href: "/admin/settings", label: "Settings", short: "Settings", icon: SettingsIcon },
 ];

@@ -1,4 +1,5 @@
 import OpeningSequence from "./components/OpeningSequence";
+import BackgroundMusic from "./components/BackgroundMusic";
 import ScratchReveal from "./components/sections/ScratchReveal";
 import Itinerary from "./components/sections/Itinerary";
 import Location from "./components/sections/Location";
@@ -15,17 +16,21 @@ import {
   formatMonthDayOrdinal,
   getVisibleSocialLinks,
 } from "@/lib/settings";
+import { getActivePublicSong } from "@/lib/music/read";
 
 export default async function Home() {
-  const [weddingDateISO, weddingDate, socialLinks] = await Promise.all([
-    getWeddingDateISO(),
-    getWeddingDate(),
-    getVisibleSocialLinks(),
-  ]);
+  const [weddingDateISO, weddingDate, socialLinks, activeSong] =
+    await Promise.all([
+      getWeddingDateISO(),
+      getWeddingDate(),
+      getVisibleSocialLinks(),
+      getActivePublicSong(),
+    ]);
   const monthDay = formatMonthDayOrdinal(weddingDate);
 
   return (
     <main className="relative bg-[color:var(--cream)]">
+      <BackgroundMusic song={activeSong} />
       <OpeningSequence socialLinks={socialLinks} />
       <ScratchReveal />
       <Itinerary />

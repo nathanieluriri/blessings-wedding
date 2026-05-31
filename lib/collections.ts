@@ -68,6 +68,63 @@ export interface SocialSettingsDoc {
   updatedBy?: string;
 }
 
+// ── Background music ────────────────────────────────────────────────────────
+
+/**
+ * One uploaded song in the library (max 5). The raw audio bytes live in the
+ * GridFS `audio` bucket; `fileId` points at the `audio.files` document.
+ * Trim/volume/loop are the playback settings applied on the public site.
+ */
+export interface SongDoc {
+  _id?: ObjectId;
+  title: string;
+  fileId: ObjectId; // GridFS audio.files _id
+  mimeType: string;
+  size: number; // bytes
+  duration: number; // seconds (decoded client-side at upload)
+  peaks: number[]; // normalized 0..1 waveform, length ~PEAK_COUNT
+  trimStart: number; // seconds
+  trimEnd: number; // seconds
+  volume: number; // 0..1 — the background level (admin-set "max volume")
+  loop: boolean;
+  createdAt: Date;
+  createdBy?: string; // email of the admin who uploaded
+}
+
+/** Which song is the active background track, stored in `settings` by _id. */
+export interface MusicSettingsDoc {
+  _id: "music";
+  activeSongId: ObjectId | null;
+  updatedAt: Date;
+  updatedBy?: string;
+}
+
+/**
+ * One in-flight chunked upload session. We stage chunks across several HTTP
+ * requests (Vercel caps a request body at ~4.5 MB) and assemble them into
+ * GridFS on finalize. A TTL index prunes abandoned sessions after an hour.
+ */
+export interface AudioUploadDoc {
+  _id: string; // uploadId (random hex)
+  fileName: string;
+  mimeType: string;
+  size: number;
+  duration: number;
+  peaks: number[];
+  totalChunks: number;
+  createdAt: Date; // TTL anchor
+  createdBy?: string;
+}
+
+/** A single staged chunk of an in-flight upload (binary payload). */
+export interface AudioUploadChunkDoc {
+  _id?: ObjectId;
+  uploadId: string;
+  index: number;
+  data: Binary;
+  createdAt: Date; // TTL anchor
+}
+
 /** One-time, time-boxed password-reset token (hash stored, never the token). */
 export interface PasswordResetDoc {
   _id?: ObjectId;
@@ -104,6 +161,17 @@ async function ensureIndexes() {
   await db
     .collection<OtpChallengeDoc>("otpChallenges")
     .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+  // Music: newest songs first; staging collections self-prune after 1 hour.
+  await db.collection<SongDoc>("songs").createIndex({ createdAt: -1 });
+  await db
+    .collection<AudioUploadDoc>("audioUploads")
+    .createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600 });
+  await db
+    .collection<AudioUploadChunkDoc>("audioUploadChunks")
+    .createIndex({ uploadId: 1, index: 1 });
+  await db
+    .collection<AudioUploadChunkDoc>("audioUploadChunks")
+    .createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600 });
   indexesEnsured = true;
 }
 
@@ -136,6 +204,35 @@ export async function socialSettingsCollection(): Promise<
 > {
   const db = await getDb();
   return db.collection<SocialSettingsDoc>("settings");
+}
+
+export async function songsCollection(): Promise<Collection<SongDoc>> {
+  await ensureIndexes();
+  const db = await getDb();
+  return db.collection<SongDoc>("songs");
+}
+
+export async function musicSettingsCollection(): Promise<
+  Collection<MusicSettingsDoc>
+> {
+  const db = await getDb();
+  return db.collection<MusicSettingsDoc>("settings");
+}
+
+export async function audioUploadsCollection(): Promise<
+  Collection<AudioUploadDoc>
+> {
+  await ensureIndexes();
+  const db = await getDb();
+  return db.collection<AudioUploadDoc>("audioUploads");
+}
+
+export async function audioUploadChunksCollection(): Promise<
+  Collection<AudioUploadChunkDoc>
+> {
+  await ensureIndexes();
+  const db = await getDb();
+  return db.collection<AudioUploadChunkDoc>("audioUploadChunks");
 }
 
 export async function passwordResetsCollection(): Promise<
