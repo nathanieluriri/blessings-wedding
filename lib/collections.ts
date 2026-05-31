@@ -1,4 +1,4 @@
-import type { Collection, ObjectId } from "mongodb";
+import type { Binary, Collection, ObjectId } from "mongodb";
 import { getDb } from "./mongodb";
 import type { RsvpStatus } from "./rsvp-status";
 

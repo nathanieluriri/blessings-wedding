@@ -189,7 +189,10 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                 key={f}
                 value={f}
                 className={cn(
-                  "flex-none gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
+                  // h-auto! overrides shadcn's base h-[calc(100%-1px)]; without it
+                  // a wrapped (two-row) list stretches each pill to the full list
+                  // height, so rows overlap the section below.
+                  "h-auto! flex-none gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
                   "border-border! bg-card! text-muted-foreground!",
                   "hover:border-primary/40 hover:text-foreground!",
                   "data-[state=active]:border-(--gold)! data-[state=active]:bg-primary! data-[state=active]:font-semibold data-[state=active]:text-primary-foreground! data-[state=active]:shadow-sm"

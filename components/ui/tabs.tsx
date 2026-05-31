@@ -16,6 +16,7 @@ function Tabs({
       data-slot="tabs"
       data-orientation={orientation}
       orientation={orientation}
+      style={{ height: "auto" }}
       className={cn(
         "group/tabs flex gap-2 data-[orientation=horizontal]:flex-col",
         className
@@ -49,6 +50,7 @@ function TabsList({
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
+    style={{ height: "auto" }}
       data-variant={variant}
       className={cn(tabsListVariants({ variant }), className)}
       {...props}
