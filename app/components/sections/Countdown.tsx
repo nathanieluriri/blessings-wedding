@@ -37,8 +37,8 @@ function CountBox({
       <div
         className="relative flex items-center justify-center rounded-2xl bg-white/70 backdrop-blur-sm border border-[color:var(--burgundy)]/15 shadow-[0_10px_40px_-20px_rgba(90,26,26,0.35)]"
         style={{
-          width: "clamp(82px, 18vw, 132px)",
-          height: "clamp(82px, 18vw, 132px)",
+          width: "clamp(60px, 18.5vw, 132px)",
+          height: "clamp(60px, 18.5vw, 132px)",
         }}
       >
         <motion.span
@@ -47,7 +47,7 @@ function CountBox({
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           className="font-serif text-[color:var(--burgundy)] tabular-nums"
-          style={{ fontSize: "clamp(28px, 6.4vw, 52px)" }}
+          style={{ fontSize: "clamp(24px, 6.2vw, 52px)" }}
         >
           {pad(value, size)}
         </motion.span>
@@ -98,7 +98,7 @@ export default function Countdown({
       <SectionTitle className="mt-4">Countdown</SectionTitle>
       <SectionDivider />
 
-      <div className="mt-6 flex items-center justify-center gap-3 sm:gap-5">
+      <div className="mt-6 flex items-center justify-center gap-2 sm:gap-5">
         <CountBox value={parts.days} label="Days" size={3} />
         <CountBox value={parts.hours} label="Hours" />
         <CountBox value={parts.minutes} label="Min" />

@@ -10,6 +10,8 @@ export interface CurrentAdmin {
   role: "root" | "admin";
   mustChangePassword: boolean;
   twoFactorEnabled: boolean;
+  /** Per-admin gate for RSVP/test notification emails. Defaults to true. */
+  emailNotificationsEnabled: boolean;
 }
 
 /**
@@ -48,5 +50,6 @@ export function toCurrentAdmin(admin: AdminDoc): CurrentAdmin {
     role: admin.role,
     mustChangePassword: admin.mustChangePassword ?? false,
     twoFactorEnabled: admin.twoFactorEnabled ?? false,
+    emailNotificationsEnabled: admin.emailNotificationsEnabled !== false,
   };
 }

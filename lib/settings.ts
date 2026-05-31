@@ -1,7 +1,14 @@
 import { unstable_cache } from "next/cache";
-import { settingsCollection } from "./collections";
+import { settingsCollection, socialSettingsCollection } from "./collections";
+import {
+  DEFAULT_SOCIAL_LINKS,
+  normalizeSocialLinks,
+  type SocialLink,
+  type VisibleSocialLink,
+} from "./social";
 
 export const WEDDING_SETTINGS_TAG = "wedding-settings";
+export const SOCIAL_SETTINGS_TAG = "social-settings";
 
 // Fallback used before anything is saved in the DB (matches the original
 // hardcoded value). Africa/Lagos is +01:00 year-round (no DST).
@@ -30,6 +37,37 @@ export async function getWeddingDateISO(): Promise<string> {
 
 export async function getWeddingDate(): Promise<Date> {
   return new Date(await readWeddingDateISO());
+}
+
+// ── Social links ───────────────────────────────────────────────────────────
+
+// Cached read, invalidated by revalidateTag(SOCIAL_SETTINGS_TAG) on update.
+const readSocialLinks = unstable_cache(
+  async (): Promise<SocialLink[]> => {
+    try {
+      const col = await socialSettingsCollection();
+      const doc = await col.findOne({ _id: "social" });
+      return normalizeSocialLinks(doc?.links);
+    } catch {
+      // DB unavailable — fall back so the public site still renders.
+      return DEFAULT_SOCIAL_LINKS;
+    }
+  },
+  ["social-links"],
+  { tags: [SOCIAL_SETTINGS_TAG] }
+);
+
+/** Full catalog with stored enabled/url values (for the admin form). */
+export async function getSocialLinks(): Promise<SocialLink[]> {
+  return readSocialLinks();
+}
+
+/** Only the links that should render publicly: enabled AND have a URL. */
+export async function getVisibleSocialLinks(): Promise<VisibleSocialLink[]> {
+  const links = await readSocialLinks();
+  return links
+    .filter((l) => l.enabled && l.url.trim().length > 0)
+    .map((l) => ({ platform: l.platform, url: l.url.trim() }));
 }
 
 // ── Formatters (stable across server timezones via Intl timeZone) ──────────

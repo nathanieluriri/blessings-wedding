@@ -1,12 +1,25 @@
 import type { Metadata } from "next";
-import { getWeddingDate, getWeddingDateISO, formatLongDate } from "@/lib/settings";
+import {
+  getWeddingDate,
+  getWeddingDateISO,
+  getSocialLinks,
+  formatLongDate,
+} from "@/lib/settings";
+import { getCurrentAdmin } from "@/lib/auth/current-admin";
 import SettingsForm from "./settings-form";
+import SocialForm from "./social-form";
+import NotificationsPrefForm from "./notifications-pref-form";
 
 export const metadata: Metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const [iso, date] = await Promise.all([getWeddingDateISO(), getWeddingDate()]);
+  const [iso, date, socialLinks, admin] = await Promise.all([
+    getWeddingDateISO(),
+    getWeddingDate(),
+    getSocialLinks(),
+    getCurrentAdmin(),
+  ]);
   const label = `${formatLongDate(date)} · ${new Intl.DateTimeFormat("en-GB", {
     timeZone: "Africa/Lagos",
     hour: "2-digit",
@@ -24,6 +37,10 @@ export default async function SettingsPage() {
         </p>
       </div>
       <SettingsForm weddingDateISO={iso} currentLabel={label} />
+      <NotificationsPrefForm
+        enabled={admin?.emailNotificationsEnabled ?? true}
+      />
+      <SocialForm links={socialLinks} />
     </div>
   );
 }

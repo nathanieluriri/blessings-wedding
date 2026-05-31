@@ -213,8 +213,8 @@ function ScratchCard({ label, aria, delay, onReveal }: ScratchCardProps) {
       transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
       className="relative"
       style={{
-        width: "clamp(118px, 26vw, 168px)",
-        height: "clamp(118px, 26vw, 168px)",
+        width: "clamp(78px, 23vw, 168px)",
+        height: "clamp(78px, 23vw, 168px)",
         filter:
           "drop-shadow(0 14px 26px rgba(90,26,26,0.32)) drop-shadow(0 3px 6px rgba(201,123,99,0.35))",
       }}
@@ -228,7 +228,7 @@ function ScratchCard({ label, aria, delay, onReveal }: ScratchCardProps) {
           animate={revealed ? { scale: 1, opacity: 1 } : { scale: 0.96, opacity: 0.95 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="absolute inset-0 flex items-center justify-center pb-[16%] font-serif text-[color:var(--burgundy)] select-none pointer-events-none"
-          style={{ fontSize: "clamp(26px, 5.4vw, 40px)" }}
+          style={{ fontSize: "clamp(22px, 5.2vw, 40px)" }}
           aria-label={aria}
         >
           {label}
@@ -477,14 +477,35 @@ export default function ScratchReveal() {
       >
         <span
           aria-hidden="true"
-          className="soft-pulse flex h-11 w-11 items-center justify-center rounded-full bg-white/70 border border-[color:var(--burgundy)]/15 text-lg"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/70 border border-[color:var(--burgundy)]/15 text-[color:var(--burgundy)]"
         >
-          ✋
+          <motion.svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-6 w-6"
+            style={{ transformOrigin: "62% 88%" }}
+            animate={{ rotate: [0, 14, -6, 14, 0] }}
+            transition={{
+              duration: 1.7,
+              repeat: Infinity,
+              repeatDelay: 0.5,
+              ease: "easeInOut",
+            }}
+          >
+            <path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2" />
+            <path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2" />
+            <path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8" />
+            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+          </motion.svg>
         </span>
         <span className="font-serif italic text-sm text-[color:var(--burgundy-soft)]/80">
           {phase === "complete"
             ? "Beautiful — keep scrolling"
-            : "Scratch all three circles to continue"}
+            : "Scratch all three hearts to continue"}
         </span>
       </motion.div>
 
@@ -495,7 +516,7 @@ export default function ScratchReveal() {
         Scratch to discover the date
       </p>
 
-      <div className="mt-12 flex items-center justify-center gap-5 sm:gap-7">
+      <div className="mt-10 sm:mt-12 flex items-center justify-center gap-3 sm:gap-7">
         {CARDS.map((c, i) => (
           <ScratchCard
             key={c.aria}

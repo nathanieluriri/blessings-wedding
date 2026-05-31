@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import {
-  dedupeEmails,
-  getAdminEmails,
+  getAdminRecipients,
   getNotificationSettings,
 } from "@/lib/notifications";
+import { getCurrentAdmin } from "@/lib/auth/current-admin";
 import NotificationsForm from "./notifications-form";
 
 export const metadata: Metadata = { title: "Notifications" };
 export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage() {
-  const [settings, adminEmails] = await Promise.all([
+  const [settings, admins, current] = await Promise.all([
     getNotificationSettings(),
-    getAdminEmails(),
+    getAdminRecipients(),
+    getCurrentAdmin(),
   ]);
 
   return (
@@ -28,7 +29,11 @@ export default async function NotificationsPage() {
       <NotificationsForm
         newRsvpEnabled={settings.newRsvpEnabled}
         extraRecipients={settings.extraRecipients}
-        adminEmails={dedupeEmails(adminEmails)}
+        admins={admins.map((a) => ({
+          email: a.email.toLowerCase(),
+          notificationsEnabled: a.notificationsEnabled,
+        }))}
+        selfNotificationsEnabled={current?.emailNotificationsEnabled ?? true}
       />
     </div>
   );

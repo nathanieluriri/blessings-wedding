@@ -11,6 +11,10 @@ export interface AdminDoc {
   name?: string;
   role: AdminRole;
   mustChangePassword?: boolean;
+  // Per-admin master gate for platform notification emails (new-RSVP + test).
+  // Missing/true = on (the default); false = this admin opted out. Security mail
+  // (sign-in codes, password resets, invites) is never gated by this.
+  emailNotificationsEnabled?: boolean;
   createdAt: Date;
   createdBy?: string; // email of the admin who created this account
   // ── Two-factor auth (TOTP authenticator app + email-OTP fallback) ──
@@ -45,6 +49,21 @@ export interface NotificationSettingsDoc {
   _id: "notifications";
   newRsvpEnabled: boolean;
   extraRecipients: string[]; // custom addresses beyond every admin's email
+  updatedAt: Date;
+  updatedBy?: string;
+}
+
+/** One configurable social link (stored shape; loosely typed platform). */
+export interface SocialLinkRecord {
+  platform: string;
+  enabled: boolean;
+  url: string;
+}
+
+/** Social links shown in the hero, stored alongside SettingsDoc in `settings`. */
+export interface SocialSettingsDoc {
+  _id: "social";
+  links: SocialLinkRecord[];
   updatedAt: Date;
   updatedBy?: string;
 }
@@ -110,6 +129,13 @@ export async function notificationSettingsCollection(): Promise<
 > {
   const db = await getDb();
   return db.collection<NotificationSettingsDoc>("settings");
+}
+
+export async function socialSettingsCollection(): Promise<
+  Collection<SocialSettingsDoc>
+> {
+  const db = await getDb();
+  return db.collection<SocialSettingsDoc>("settings");
 }
 
 export async function passwordResetsCollection(): Promise<

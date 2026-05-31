@@ -34,13 +34,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -69,7 +62,6 @@ export default function AdminsManager({
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState<"admin" | "root">("admin");
   const [loading, setLoading] = useState(false);
   const [resendingId, setResendingId] = useState<string | null>(null);
 
@@ -84,7 +76,7 @@ export default function AdminsManager({
       const res = await fetch("/api/admin/admins", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name, role }),
+        body: JSON.stringify({ email, name, role: "admin" }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -95,7 +87,6 @@ export default function AdminsManager({
       setOpen(false);
       setEmail("");
       setName("");
-      setRole("admin");
       router.refresh();
     } finally {
       setLoading(false);
@@ -180,23 +171,6 @@ export default function AdminsManager({
                     onChange={(e) => setName(e.target.value)}
                   />
                 </div>
-                {currentRole === "root" && (
-                  <div className="space-y-2">
-                    <Label>Role</Label>
-                    <Select
-                      value={role}
-                      onValueChange={(v) => setRole(v as "admin" | "root")}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="root">Root</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
               </div>
               <DialogFooter>
                 <DialogClose asChild>

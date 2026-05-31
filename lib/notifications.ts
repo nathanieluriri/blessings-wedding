@@ -31,11 +31,33 @@ export async function getNotificationSettings(): Promise<NotificationSettings> {
   }
 }
 
-/** Every admin account's email — always notified about new RSVPs. */
+/** Every admin account's email (regardless of their per-account email gate). */
 export async function getAdminEmails(): Promise<string[]> {
   const col = await adminsCollection();
   const docs = await col.find({}, { projection: { email: 1 } }).toArray();
   return docs.map((d) => d.email);
+}
+
+export interface AdminRecipient {
+  email: string;
+  /** This admin's per-account email gate. Missing in DB ⇒ true (default on). */
+  notificationsEnabled: boolean;
+}
+
+/**
+ * Every admin's email plus whether they currently receive notification emails.
+ * Used by the notifications UI (to show who's muted) and by the send flow
+ * (to skip muted admins). Extra, non-admin recipients have no such gate.
+ */
+export async function getAdminRecipients(): Promise<AdminRecipient[]> {
+  const col = await adminsCollection();
+  const docs = await col
+    .find({}, { projection: { email: 1, emailNotificationsEnabled: 1 } })
+    .toArray();
+  return docs.map((d) => ({
+    email: d.email,
+    notificationsEnabled: d.emailNotificationsEnabled !== false,
+  }));
 }
 
 /** Lower-case, trim, drop blanks/dupes. */
@@ -55,13 +77,21 @@ export function dedupeEmails(emails: string[]): string[] {
 export async function sendNewRsvpNotification(
   rsvp: Pick<RsvpDoc, "name" | "attending" | "email" | "message">
 ): Promise<void> {
-  const [settings, adminEmails] = await Promise.all([
+  const [settings, admins] = await Promise.all([
     getNotificationSettings(),
-    getAdminEmails(),
+    getAdminRecipients(),
   ]);
   if (!settings.newRsvpEnabled) return;
 
-  const recipients = dedupeEmails([...adminEmails, ...settings.extraRecipients]);
+  // Per-admin gate: skip admins who muted their notifications. Extra recipients
+  // (the couple, a planner) have no account, so they're always included.
+  const enabledAdminEmails = admins
+    .filter((a) => a.notificationsEnabled)
+    .map((a) => a.email);
+  const recipients = dedupeEmails([
+    ...enabledAdminEmails,
+    ...settings.extraRecipients,
+  ]);
   if (recipients.length === 0) return;
 
   const { subject, html, text } = newRsvpEmail({

@@ -32,7 +32,11 @@
       "mcp__plugin_playwright_playwright__browser_take_screenshot",
       "mcp__plugin_playwright_playwright__browser_close",
       "Bash(rm -rf .tmp_preview .playwright-mcp emails-preview.png)",
-      "Bash(ls -d .tmp_preview .playwright-mcp emails-preview.png)"
+      "Bash(ls -d .tmp_preview .playwright-mcp emails-preview.png)",
+      "Bash(awk 'NR>=640 && NR<=820' \"c:/Users/Mr Dashi/Downloads/blessings_wedding/src/app/admin/login/page.tsx\")",
+      "Bash(echo \"EXIT_TSC=$?\")",
+      "Bash(Select-String -Pattern \"admins-manager\" -SimpleMatch)",
+      "PowerShell(npx tsc --noEmit -p tsconfig.json 2>&1 | Select-String -Pattern \"admins-manager\"; \"EXIT: $LASTEXITCODE\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\Mr Dashi\\Downloads\\blessings_wedding\\curtain_frames"

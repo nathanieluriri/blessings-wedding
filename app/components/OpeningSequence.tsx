@@ -4,6 +4,8 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useScrollLock } from "./ScrollLock";
+import { SocialIcon } from "@/components/social-icons";
+import { SOCIAL_LABEL, type VisibleSocialLink } from "@/lib/social";
 
 // Wedding photos served from /public/wedding. They cross-fade inside the frame
 // as it expands to full-bleed; the LAST one stays as the hero background.
@@ -149,7 +151,11 @@ function HeroFlower({ side }: { side: "l" | "r" }) {
   );
 }
 
-export default function OpeningSequence() {
+export default function OpeningSequence({
+  socialLinks = [],
+}: {
+  socialLinks?: VisibleSocialLink[];
+}) {
   const [progress, setProgress] = useState(0);
   const [introDone, setIntroDone] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -347,11 +353,25 @@ export default function OpeningSequence() {
 
         <div className="intro-topbar">
           <div className="intro-wordmark">OFODIMMA</div>
-          <div className="intro-burger" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </div>
+          {socialLinks.length > 0 && (
+            <nav className="intro-social" aria-label="Our social links">
+              {socialLinks.map((link) => (
+                <a
+                  key={link.platform}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="intro-social-link"
+                  aria-label={SOCIAL_LABEL[link.platform]}
+                >
+                  <SocialIcon
+                    platform={link.platform}
+                    className="intro-social-ico"
+                  />
+                </a>
+              ))}
+            </nav>
+          )}
         </div>
 
         <div className="intro-invite">

@@ -111,16 +111,19 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
   return (
     <div className="space-y-4">
       <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-        <TabsList className="h-auto flex-wrap">
+        <TabsList className="h-auto flex-wrap justify-start gap-1 rounded-xl border border-stone-200 bg-stone-100 p-1.5 dark:border-stone-700 dark:bg-stone-800/60">
           {FILTERS.map((f) => {
             const color = f === "all" ? ALL_FILTER_COLOR : STATUS_COLOR[f];
+            const active = filter === f;
             return (
               <TabsTrigger
                 key={f}
                 value={f}
                 className={cn(
-                  "gap-1.5 data-[state=active]:font-semibold data-[state=active]:shadow-sm",
-                  color.tab
+                  "gap-2 rounded-lg px-3.5 py-2 text-sm font-medium text-stone-600 transition-colors",
+                  "hover:bg-stone-200/70 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-700/60 dark:hover:text-stone-100",
+                  "data-[state=active]:bg-stone-700 data-[state=active]:font-semibold data-[state=active]:text-white data-[state=active]:shadow-sm",
+                  "dark:data-[state=active]:bg-stone-200 dark:data-[state=active]:text-stone-900"
                 )}
               >
                 <span
@@ -131,9 +134,9 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                 <span
                   className={cn(
                     "rounded-full px-1.5 text-xs tabular-nums",
-                    filter === f
-                      ? "bg-black/10"
-                      : "bg-muted text-muted-foreground"
+                    active
+                      ? "bg-white/20 text-white dark:bg-black/10 dark:text-stone-900"
+                      : "bg-stone-200 text-stone-600 dark:bg-stone-700 dark:text-stone-300"
                   )}
                 >
                   {counts[f] ?? 0}
@@ -184,7 +187,7 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                 </TableCell>
                 <TableCell>
                   {row.attending === "yes" ? (
-                    <span className="text-[color:var(--primary)]">Yes</span>
+                    <span className="text-primary">Yes</span>
                   ) : (
                     <span className="text-muted-foreground">No</span>
                   )}

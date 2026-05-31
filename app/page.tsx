@@ -13,18 +13,20 @@ import {
   getWeddingDate,
   getWeddingDateISO,
   formatMonthDayOrdinal,
+  getVisibleSocialLinks,
 } from "@/lib/settings";
 
 export default async function Home() {
-  const [weddingDateISO, weddingDate] = await Promise.all([
+  const [weddingDateISO, weddingDate, socialLinks] = await Promise.all([
     getWeddingDateISO(),
     getWeddingDate(),
+    getVisibleSocialLinks(),
   ]);
   const monthDay = formatMonthDayOrdinal(weddingDate);
 
   return (
     <main className="relative bg-[color:var(--cream)]">
-      <OpeningSequence />
+      <OpeningSequence socialLinks={socialLinks} />
       <ScratchReveal />
       <Itinerary />
       <Location />

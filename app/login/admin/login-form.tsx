@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +42,7 @@ export default function LoginForm() {
   const [step, setStep] = useState<Step>("credentials");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [mode, setMode] = useState<Mode>("totp");
   const [code, setCode] = useState("");
   const [info, setInfo] = useState<string | null>(null);
@@ -154,15 +156,31 @@ export default function LoginForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                  className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-3 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {showPassword ? (
+                    <EyeOffIcon className="size-4" aria-hidden />
+                  ) : (
+                    <EyeIcon className="size-4" aria-hidden />
+                  )}
+                </button>
+              </div>
             </div>
             {error && (
               <p className="text-sm text-[color:var(--destructive)]">{error}</p>
@@ -173,7 +191,7 @@ export default function LoginForm() {
             <div className="text-center">
               <Link
                 href="/login/admin/forgot"
-                className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+                className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
               >
                 Forgot password?
               </Link>
