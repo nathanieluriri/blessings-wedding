@@ -38,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const weddingDate = await getWeddingDate();
   const longDate = formatLongDate(weddingDate);
   const weddingYear = formatYear(weddingDate);
-  const description = `Join us as we say “I do.” A celebration of love, colour, and Igbo heritage. #OfoDiMma`;
+  const description = `Join us as we say “I do.” `;
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -87,7 +87,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: "Blessing & Justice — #OfoDiMma",
-      description: `Join us as we say “I do.” #OfoDiMma`,
+      description: `Join us as we say “I do.” `,
     },
     robots: {
       index: true,
@@ -182,7 +182,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const weddingDate = await getWeddingDate();
-  const description = `Join us as we say “I do.” A celebration of love, colour, and Igbo heritage. #OfoDiMma`;
+  const description = `Join us as we say “I do.” `;
 
   const eventJsonLd = buildEventJsonLd(weddingDate, description);
   const websiteJsonLd = {
