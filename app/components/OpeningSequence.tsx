@@ -39,8 +39,9 @@ const REVEAL_BEAT = 0.21;
 const easeInOut = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-// monogram.svg as a "ghost outline + tracing pen". Filled compound shapes with
-// the fills dropped; we stroke their contours. pathLength={1} normalizes the
+// The monogram geometry (inlined below) is rendered as a "ghost outline +
+// tracing pen": the original filled compound shapes with their fills dropped;
+// we stroke their contours instead. pathLength={1} normalizes the
 // dash math. `delay`/`duration` define each path's window in one shared trace
 // timeline; the counter is driven off the SAME clock, so it hits 100 exactly as
 // the trace completes.

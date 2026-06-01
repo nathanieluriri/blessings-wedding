@@ -13,6 +13,7 @@ export default async function RsvpsPage() {
     id: d._id!.toHexString(),
     name: d.name,
     email: d.email,
+    phone: d.phone,
     attending: d.attending,
     message: d.message,
     status: d.status,

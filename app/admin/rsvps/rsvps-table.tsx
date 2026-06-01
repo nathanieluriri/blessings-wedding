@@ -3,7 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { MoreHorizontalIcon, MailIcon, Loader2Icon } from "lucide-react";
+import {
+  MoreHorizontalIcon,
+  MailIcon,
+  PhoneIcon,
+  Loader2Icon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -50,6 +55,7 @@ export interface RsvpRow {
   id: string;
   name: string;
   email?: string;
+  phone?: string;
   attending: "yes" | "no";
   message?: string;
   status: RsvpStatus;
@@ -283,6 +289,22 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                 </dd>
               </div>
               <div className="flex items-baseline justify-between gap-3">
+                <dt className="shrink-0 text-muted-foreground">Phone</dt>
+                <dd className="min-w-0 text-right">
+                  {row.phone ? (
+                    <a
+                      href={`tel:${row.phone.replace(/\s+/g, "")}`}
+                      className="inline-flex max-w-full items-center gap-1 hover:underline"
+                    >
+                      <PhoneIcon className="size-3.5 shrink-0" />
+                      <span className="truncate">{row.phone}</span>
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-3">
                 <dt className="shrink-0 text-muted-foreground">Submitted</dt>
                 <dd className="text-right text-muted-foreground">
                   {formatWhen(row.createdAt)}
@@ -308,7 +330,7 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Attending</TableHead>
-              <TableHead className="hidden md:table-cell">Email</TableHead>
+              <TableHead className="hidden md:table-cell">Contact</TableHead>
               <TableHead className="hidden lg:table-cell">Submitted</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -348,14 +370,27 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                   )}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {row.email ? (
-                    <a
-                      href={`mailto:${row.email}`}
-                      className="inline-flex items-center gap-1 text-sm hover:underline"
-                    >
-                      <MailIcon className="size-3.5" />
-                      {row.email}
-                    </a>
+                  {row.email || row.phone ? (
+                    <div className="flex flex-col gap-1 text-sm">
+                      {row.email && (
+                        <a
+                          href={`mailto:${row.email}`}
+                          className="inline-flex items-center gap-1 hover:underline"
+                        >
+                          <MailIcon className="size-3.5 shrink-0" />
+                          {row.email}
+                        </a>
+                      )}
+                      {row.phone && (
+                        <a
+                          href={`tel:${row.phone.replace(/\s+/g, "")}`}
+                          className="inline-flex items-center gap-1 hover:underline"
+                        >
+                          <PhoneIcon className="size-3.5 shrink-0" />
+                          {row.phone}
+                        </a>
+                      )}
+                    </div>
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
@@ -401,6 +436,10 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                 <div>
                   <dt className="text-muted-foreground">Email</dt>
                   <dd className="wrap-break-word">{detail.email ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Phone</dt>
+                  <dd className="wrap-break-word">{detail.phone ?? "—"}</dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Message</dt>

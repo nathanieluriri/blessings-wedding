@@ -86,6 +86,7 @@ export function newRsvpEmail(rsvp: {
   name: string;
   attending: "yes" | "no";
   email?: string;
+  phone?: string;
   message?: string;
   adminUrl: string;
 }): BuiltEmail {
@@ -99,6 +100,9 @@ export function newRsvpEmail(rsvp: {
     rsvp.email
       ? `<p style="${P}"><strong>Email:</strong> ${esc(rsvp.email)}</p>`
       : "",
+    rsvp.phone
+      ? `<p style="${P}"><strong>Phone:</strong> ${esc(rsvp.phone)}</p>`
+      : "",
     rsvp.message
       ? `<p style="${P}"><strong>Message:</strong><br>${esc(rsvp.message)}</p>`
       : "",
@@ -109,7 +113,9 @@ export function newRsvpEmail(rsvp: {
   );
   const text = `New RSVP from ${rsvp.name} — ${status}\n${
     rsvp.email ? `Email: ${rsvp.email}\n` : ""
-  }${rsvp.message ? `Message: ${rsvp.message}\n` : ""}\nView: ${rsvp.adminUrl}`;
+  }${rsvp.phone ? `Phone: ${rsvp.phone}\n` : ""}${
+    rsvp.message ? `Message: ${rsvp.message}\n` : ""
+  }\nView: ${rsvp.adminUrl}`;
   return { subject, html, text };
 }
 

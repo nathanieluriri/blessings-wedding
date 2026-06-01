@@ -13,6 +13,7 @@ export async function POST(request: Request) {
   const data = (body ?? {}) as Record<string, unknown>;
   const name = typeof data.name === "string" ? data.name.trim() : "";
   const email = typeof data.email === "string" ? data.email.trim() : "";
+  const phone = typeof data.phone === "string" ? data.phone.trim() : "";
   const message = typeof data.message === "string" ? data.message.trim() : "";
   const attending = data.attending;
 
@@ -34,6 +35,14 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+  // Lenient phone check: a leading "+" plus 7–15 digits once separators are
+  // stripped. Phone is optional, so blanks pass straight through.
+  if (phone && !/^\d{7,15}$/.test(phone.replace(/^\+/, "").replace(/[\s().-]/g, ""))) {
+    return NextResponse.json(
+      { error: "That phone number looks off." },
+      { status: 400 }
+    );
+  }
 
   try {
     const now = new Date();
@@ -41,6 +50,7 @@ export async function POST(request: Request) {
     await col.insertOne({
       name,
       email: email || undefined,
+      phone: phone || undefined,
       attending,
       message: message || undefined,
       status: "new",
@@ -55,6 +65,7 @@ export async function POST(request: Request) {
         name,
         attending,
         email: email || undefined,
+        phone: phone || undefined,
         message: message || undefined,
       })
     );

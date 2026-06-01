@@ -22,6 +22,8 @@ export default function RSVP({
   rsvpDeadline: string;
 }) {
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [attending, setAttending] = useState<Attendance>(null);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -39,7 +41,7 @@ export default function RSVP({
       const res = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, attending, message }),
+        body: JSON.stringify({ name, phone, email, attending, message }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -96,6 +98,37 @@ export default function RSVP({
                 className="mt-2 w-full rounded-lg border border-[color:var(--burgundy)]/20 bg-white px-4 py-3 font-serif text-[color:var(--foreground)] outline-none focus:border-[color:var(--burgundy)] focus:ring-2 focus:ring-[color:var(--burgundy)]/15 transition"
               />
             </label>
+
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+              <label className="block">
+                <span className="font-sans text-[11px] uppercase tracking-[0.3em] text-[color:var(--burgundy-soft)]/85">
+                  Phone (optional)
+                </span>
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+234 ..."
+                  className="mt-2 w-full rounded-lg border border-[color:var(--burgundy)]/20 bg-white px-4 py-3 font-serif text-[color:var(--foreground)] outline-none focus:border-[color:var(--burgundy)] focus:ring-2 focus:ring-[color:var(--burgundy)]/15 transition"
+                />
+              </label>
+
+              <label className="block">
+                <span className="font-sans text-[11px] uppercase tracking-[0.3em] text-[color:var(--burgundy-soft)]/85">
+                  Email (optional)
+                </span>
+                <input
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="mt-2 w-full rounded-lg border border-[color:var(--burgundy)]/20 bg-white px-4 py-3 font-serif text-[color:var(--foreground)] outline-none focus:border-[color:var(--burgundy)] focus:ring-2 focus:ring-[color:var(--burgundy)]/15 transition"
+                />
+              </label>
+            </div>
 
             <fieldset className="mt-5">
               <legend className="font-sans text-[11px] uppercase tracking-[0.3em] text-[color:var(--burgundy-soft)]/85">

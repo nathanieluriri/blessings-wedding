@@ -28,6 +28,7 @@ export interface RsvpDoc {
   _id?: ObjectId;
   name: string;
   email?: string;
+  phone?: string;
   attending: "yes" | "no";
   message?: string;
   status: RsvpStatus;

@@ -75,7 +75,7 @@ export function dedupeEmails(emails: string[]): string[] {
  * Called via `after()` so it never blocks or breaks the guest's submission.
  */
 export async function sendNewRsvpNotification(
-  rsvp: Pick<RsvpDoc, "name" | "attending" | "email" | "message">
+  rsvp: Pick<RsvpDoc, "name" | "attending" | "email" | "phone" | "message">
 ): Promise<void> {
   const [settings, admins] = await Promise.all([
     getNotificationSettings(),
@@ -98,6 +98,7 @@ export async function sendNewRsvpNotification(
     name: rsvp.name,
     attending: rsvp.attending,
     email: rsvp.email,
+    phone: rsvp.phone,
     message: rsvp.message,
     adminUrl: `${getSiteUrl()}/admin/rsvps`,
   });
