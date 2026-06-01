@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
+import WhatsAppLink from "../WhatsAppLink";
 import SectionShell, {
   SectionDivider,
   SectionEyebrow,
@@ -21,7 +22,6 @@ export default function RSVP({
   rsvpDeadline: string;
 }) {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [attending, setAttending] = useState<Attendance>(null);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -39,7 +39,7 @@ export default function RSVP({
       const res = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, attending, message }),
+        body: JSON.stringify({ name, attending, message }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -68,14 +68,7 @@ export default function RSVP({
           Please let us know by {rsvpDeadline}.
         </p>
         <p className="mx-auto mt-3 max-w-xl font-sans text-sm text-[color:var(--burgundy-soft)]/80">
-          Prefer email? RSVP to{" "}
-          <a
-            href="mailto:theofokansis@gmail.com"
-            className="font-medium text-[color:var(--burgundy)] underline decoration-[color:var(--burgundy)]/30 underline-offset-4 hover:decoration-[color:var(--burgundy)]"
-          >
-            theofokansis@gmail.com
-          </a>
-          .
+          Prefer WhatsApp? RSVP via <WhatsAppLink />.
         </p>
       </div>
 
@@ -100,19 +93,6 @@ export default function RSVP({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
-                className="mt-2 w-full rounded-lg border border-[color:var(--burgundy)]/20 bg-white px-4 py-3 font-serif text-[color:var(--foreground)] outline-none focus:border-[color:var(--burgundy)] focus:ring-2 focus:ring-[color:var(--burgundy)]/15 transition"
-              />
-            </label>
-
-            <label className="mt-5 block">
-              <span className="font-sans text-[11px] uppercase tracking-[0.3em] text-[color:var(--burgundy-soft)]/85">
-                Email (optional)
-              </span>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
                 className="mt-2 w-full rounded-lg border border-[color:var(--burgundy)]/20 bg-white px-4 py-3 font-serif text-[color:var(--foreground)] outline-none focus:border-[color:var(--burgundy)] focus:ring-2 focus:ring-[color:var(--burgundy)]/15 transition"
               />
             </label>

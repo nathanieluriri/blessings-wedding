@@ -138,7 +138,7 @@ function buildEventJsonLd(weddingDate: Date, description: string) {
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     url: SITE_URL,
-    image: [`${SITE_URL}/opengraph-image`],
+    image: [`${SITE_URL}/opengraph-image.png`],
     location: {
       "@type": "Place",
       name: "Acropolis Park",

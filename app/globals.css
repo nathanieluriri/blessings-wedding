@@ -1104,6 +1104,77 @@ html.lenis body {
     opacity: 1;
   }
 }
+
+/* "Tap for sound" affordance — a gentle double ripple + label shown until the
+   guest starts the music (the opening sequence auto-runs without a tap, so this
+   tells passive guests how to begin). */
+.bg-music-control[data-hint="true"]::before,
+.bg-music-control[data-hint="true"]::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1.5px solid color-mix(in srgb, var(--gold) 75%, transparent);
+  pointer-events: none;
+  animation: bgMusicPulse 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+.bg-music-control[data-hint="true"]::after {
+  animation-delay: 1.2s;
+}
+@keyframes bgMusicPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+.bg-music-hint {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  white-space: nowrap;
+  pointer-events: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: color-mix(in srgb, var(--burgundy) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold) 50%, transparent);
+  border-radius: 999px;
+  padding: 6px 12px;
+  box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transform: translateY(-50%);
+  animation: bgMusicHintIn 500ms cubic-bezier(0.16, 1, 0.3, 1) both,
+    bgMusicHintBob 2.4s ease-in-out 500ms infinite;
+}
+@keyframes bgMusicHintIn {
+  from {
+    opacity: 0;
+    transform: translate(8px, -50%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+}
+@keyframes bgMusicHintBob {
+  0%,
+  100% {
+    transform: translate(0, -50%);
+  }
+  50% {
+    transform: translate(-3px, -50%);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .bg-music-control {
     transition: opacity 200ms ease;
@@ -1115,6 +1186,16 @@ html.lenis body {
   .bg-music-eq > span {
     animation: none;
     height: 12px;
+  }
+  .bg-music-control[data-hint="true"]::before,
+  .bg-music-control[data-hint="true"]::after {
+    animation: none;
+    opacity: 0.55;
+    transform: scale(1.12);
+  }
+  .bg-music-hint {
+    animation: none;
+    opacity: 1;
   }
 }
 

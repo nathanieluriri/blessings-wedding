@@ -74,7 +74,7 @@ export default function Hashtag() {
         className="mx-auto mt-8 w-full max-w-xl"
       >
         <img
-          src="/scenes/hashtag.svg"
+          src="/scenes/hashtag.png"
           alt=""
           aria-hidden="true"
           loading="lazy"

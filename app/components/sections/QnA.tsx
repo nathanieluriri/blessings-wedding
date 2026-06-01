@@ -2,14 +2,12 @@
 
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
+import WhatsAppLink from "../WhatsAppLink";
 import SectionShell, {
   SectionDivider,
   SectionEyebrow,
   SectionTitle,
 } from "./SectionShell";
-
-// RSVP contact — kept in sync with the RSVP section.
-const RSVP_EMAIL = "theofokansis@gmail.com";
 
 type QA = { q: string; a: ReactNode };
 
@@ -44,18 +42,10 @@ export default function QnA({
     },
     {
       q: "Whom should I call with questions?",
-      // TODO: add a contact name + phone number if the couple would like one
-      // listed alongside the email.
       a: (
         <>
-          For anything at all, email us at{" "}
-          <a
-            href={`mailto:${RSVP_EMAIL}`}
-            className="font-medium text-[color:var(--burgundy)] underline decoration-[color:var(--burgundy)]/30 underline-offset-4 hover:decoration-[color:var(--burgundy)]"
-          >
-            {RSVP_EMAIL}
-          </a>{" "}
-          and we&rsquo;ll get right back to you.
+          For anything at all, WhatsApp us at{" "}
+          <WhatsAppLink /> and we&rsquo;ll get right back to you.
         </>
       ),
     },

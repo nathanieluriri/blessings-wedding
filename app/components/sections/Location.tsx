@@ -32,7 +32,7 @@ export default function Location() {
         className="mx-auto mt-12 max-w-4xl"
       >
         <img
-          src="/scenes/venue.svg"
+          src="/scenes/venue.png"
           alt=""
           aria-hidden="true"
           loading="lazy"

@@ -71,8 +71,8 @@ app/
   layout.tsx              # metadata, fonts, JSON-LD
   page.tsx                # the invitation page (composed of sections)
   globals.css             # palette + animations
-  opengraph-image.tsx     # dynamic OG/Twitter card
-  twitter-image.tsx
+  opengraph-image.png     # social card (OG.png letterboxed to 1200x630)
+  twitter-image.png       # regenerate: node scripts/generate-og-image.mjs
   robots.ts               # search + AI crawler rules
   sitemap.ts
   manifest.ts

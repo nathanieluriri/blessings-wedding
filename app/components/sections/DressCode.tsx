@@ -41,7 +41,7 @@ export default function DressCode() {
         className="mx-auto mt-12 w-full max-w-4xl"
       >
         <img
-          src="/scenes/dress-code.svg"
+          src="/scenes/dress-code.png"
           alt=""
           aria-hidden="true"
           loading="lazy"
