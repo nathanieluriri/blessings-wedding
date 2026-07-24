@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
-import WhatsAppLink from "../WhatsAppLink";
 import SectionShell, {
   SectionDivider,
   SectionEyebrow,
@@ -41,11 +40,11 @@ export default function QnA({
       ),
     },
     {
-      q: "Whom should I call with questions?",
+      q: "Whom should I reach with questions?",
       a: (
         <>
-          For anything at all, WhatsApp us at{" "}
-          <WhatsAppLink /> and we&rsquo;ll get right back to you.
+          Drop us a note in the message box of the RSVP form below and
+          we&rsquo;ll get right back to you.
         </>
       ),
     },

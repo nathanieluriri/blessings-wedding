@@ -2,7 +2,6 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
-import WhatsAppLink from "../WhatsAppLink";
 import SectionShell, {
   SectionDivider,
   SectionEyebrow,
@@ -10,6 +9,8 @@ import SectionShell, {
 } from "./SectionShell";
 
 type Attendance = "yes" | "no" | null;
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function RSVP({
   monthDay,
@@ -30,11 +31,21 @@ export default function RSVP({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSubmit = name.trim().length > 1 && attending !== null && !submitting;
+  const canSubmit =
+    name.trim().length > 1 &&
+    EMAIL_RE.test(email.trim()) &&
+    attending !== null &&
+    !submitting;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (name.trim().length <= 1 || attending === null || submitting) return;
+    if (
+      name.trim().length <= 1 ||
+      !EMAIL_RE.test(email.trim()) ||
+      attending === null ||
+      submitting
+    )
+      return;
     setError(null);
     setSubmitting(true);
     try {
@@ -68,9 +79,6 @@ export default function RSVP({
         <SectionDivider />
         <p className="mx-auto max-w-xl font-serif italic text-base sm:text-lg text-[color:var(--burgundy-soft)]/80">
           Please let us know by {rsvpDeadline}.
-        </p>
-        <p className="mx-auto mt-3 max-w-xl font-sans text-sm text-[color:var(--burgundy-soft)]/80">
-          Prefer WhatsApp? RSVP via <WhatsAppLink />.
         </p>
       </div>
 
@@ -117,10 +125,11 @@ export default function RSVP({
 
               <label className="block">
                 <span className="font-sans text-[11px] uppercase tracking-[0.3em] text-[color:var(--burgundy-soft)]/85">
-                  Email (optional)
+                  Email *
                 </span>
                 <input
                   type="email"
+                  required
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}

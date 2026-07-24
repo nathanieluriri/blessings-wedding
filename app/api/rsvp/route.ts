@@ -29,9 +29,9 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json(
-      { error: "That email address looks off." },
+      { error: "Please enter a valid email address." },
       { status: 400 }
     );
   }
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     const col = await rsvpsCollection();
     await col.insertOne({
       name,
-      email: email || undefined,
+      email,
       phone: phone || undefined,
       attending,
       message: message || undefined,
