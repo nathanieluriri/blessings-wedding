@@ -62,6 +62,7 @@ export interface RsvpRow {
   createdAt: string;
   reviewedBy?: string;
   reviewedAt?: string;
+  ivSentAt?: string;
 }
 
 const FILTERS: ("all" | RsvpStatus)[] = ["all", ...RSVP_STATUSES];
@@ -249,8 +250,15 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                 >
                   {row.name}
                 </button>
-                <div className="mt-1">
+                <div className="mt-1 flex flex-wrap items-center gap-2">
                   <StatusBadge status={row.status} />
+                  {row.ivSentAt ? (
+                    <span className="text-xs text-muted-foreground">
+                      IV sent
+                    </span>
+                  ) : row.status === "accepted" && !row.email ? (
+                    <span className="text-xs text-amber-600">No email</span>
+                  ) : null}
                 </div>
               </div>
               <RowActions
@@ -400,6 +408,15 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={row.status} />
+                  {row.ivSentAt ? (
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      IV sent {formatWhen(row.ivSentAt)}
+                    </div>
+                  ) : row.status === "accepted" && !row.email ? (
+                    <div className="mt-1 text-xs text-amber-600">
+                      No email — can&rsquo;t send IV
+                    </div>
+                  ) : null}
                 </TableCell>
                 <TableCell className="text-right">
                   <RowActions
@@ -445,6 +462,14 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                   <dt className="text-muted-foreground">Message</dt>
                   <dd className="whitespace-pre-wrap">
                     {detail.message ? detail.message : "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">IV</dt>
+                  <dd>
+                    {detail.ivSentAt
+                      ? `Sent ${formatWhen(detail.ivSentAt)}`
+                      : "Not sent"}
                   </dd>
                 </div>
                 {detail.reviewedBy && (

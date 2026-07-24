@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { rsvpsCollection } from "@/lib/collections";
 import RsvpsTable, { type RsvpRow } from "./rsvps-table";
+import SendIvsButton from "./send-ivs-button";
 
 export const metadata: Metadata = { title: "RSVPs" };
 export const dynamic = "force-dynamic";
@@ -20,17 +21,25 @@ export default async function RsvpsPage() {
     createdAt: d.createdAt.toISOString(),
     reviewedBy: d.reviewedBy,
     reviewedAt: d.reviewedAt?.toISOString(),
+    ivSentAt: d.ivSentAt?.toISOString(),
   }));
+
+  const pendingIvCount = docs.filter(
+    (d) => d.status === "accepted" && !d.ivSentAt && d.email
+  ).length;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-serif text-2xl text-[color:var(--primary)]">
-          RSVPs
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Review and triage guest responses.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-serif text-2xl text-[color:var(--primary)]">
+            RSVPs
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Review and triage guest responses.
+          </p>
+        </div>
+        <SendIvsButton pendingCount={pendingIvCount} />
       </div>
       <RsvpsTable rows={rows} />
     </div>
