@@ -19,10 +19,36 @@ export async function sendIvEmail(rsvp: {
   try {
     const col = await rsvpsCollection();
 
-    let token = rsvp.ivToken;
+    // Re-read the doc to guard against races between the auto-send (after()
+    // on accept) and the bulk endpoint, which can both target the same RSVP.
+    const current = await col.findOne({ _id: rsvp._id });
+    if (!current) {
+      return { ok: false, error: "RSVP not found" };
+    }
+    // Idempotent duplicate-guard: if it's already been sent, don't send again.
+    if (current.ivSentAt) {
+      return { ok: true };
+    }
+
+    let token = current.ivToken;
     if (!token) {
-      token = randomBytes(16).toString("hex");
-      await col.updateOne({ _id: rsvp._id }, { $set: { ivToken: token } });
+      const fresh = randomBytes(16).toString("hex");
+      // Atomic mint: only set the token if nobody has minted one yet. If
+      // another racer wins, findOneAndUpdate returns null (no match) and we
+      // fall back to reading the winner's token.
+      const updated = await col.findOneAndUpdate(
+        { _id: rsvp._id, ivToken: { $exists: false } },
+        { $set: { ivToken: fresh } },
+        { returnDocument: "after" }
+      );
+      token = updated?.ivToken;
+      if (!token) {
+        const winner = await col.findOne({ _id: rsvp._id });
+        token = winner?.ivToken;
+      }
+      if (!token) {
+        return { ok: false, error: "Token mint failed" };
+      }
     }
 
     const base = getSiteUrl();
