@@ -91,10 +91,10 @@ function ItineraryStop({ item, delay }: { item: Item; delay: number }) {
   );
 }
 
-const WE_DO: Item = { title: "We Do", time: "2:30 pm", icon: <RingsIcon /> };
-const WE_DRINK: Item = { title: "We Drink", time: "4:00 pm", icon: <GlassIcon /> };
-const WE_EAT: Item = { title: "We Eat", time: "5:00 pm", icon: <ForkKnifeIcon /> };
-const WE_PARTY: Item = { title: "We Party", time: "8:00 pm", icon: <NoteIcon /> };
+const WE_DO: Item = { title: "We Do", time: "12:30 pm", icon: <RingsIcon /> };
+const WE_DRINK: Item = { title: "We Drink", time: "2:00 pm", icon: <GlassIcon /> };
+const WE_EAT: Item = { title: "We Eat", time: "3:00 pm", icon: <ForkKnifeIcon /> };
+const WE_PARTY: Item = { title: "We Party", time: "7:00 pm", icon: <NoteIcon /> };
 
 export default function Itinerary() {
   return (
