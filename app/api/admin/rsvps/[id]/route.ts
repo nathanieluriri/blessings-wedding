@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { ObjectId } from "mongodb";
 import { rsvpsCollection } from "@/lib/collections";
 import { getCurrentAdmin } from "@/lib/auth/current-admin";
 import { canTransition, isRsvpStatus } from "@/lib/rsvp-status";
+import { sendIvEmail } from "@/lib/iv/send";
 
 export async function PATCH(
   request: Request,
@@ -61,6 +62,21 @@ export async function PATCH(
       },
     }
   );
+
+  // First time a guest is accepted, deliver their IV. after() so email
+  // latency/failure never blocks or fails the status change; sendIvEmail
+  // checks are duplicated here so we don't even schedule a no-op.
+  if (next === "accepted" && doc.email && !doc.ivSentAt) {
+    const { email } = doc;
+    after(() =>
+      sendIvEmail({
+        _id: doc._id!,
+        name: doc.name,
+        email,
+        ivToken: doc.ivToken,
+      })
+    );
+  }
 
   return NextResponse.json({ ok: true, status: next });
 }
