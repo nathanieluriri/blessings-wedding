@@ -16,29 +16,34 @@ export async function sendIvEmail(rsvp: {
   email: string;
   ivToken?: string;
 }): Promise<{ ok: boolean; error?: string }> {
-  const col = await rsvpsCollection();
+  try {
+    const col = await rsvpsCollection();
 
-  let token = rsvp.ivToken;
-  if (!token) {
-    token = randomBytes(16).toString("hex");
-    await col.updateOne({ _id: rsvp._id }, { $set: { ivToken: token } });
+    let token = rsvp.ivToken;
+    if (!token) {
+      token = randomBytes(16).toString("hex");
+      await col.updateOne({ _id: rsvp._id }, { $set: { ivToken: token } });
+    }
+
+    const base = getSiteUrl();
+    const built = ivInviteEmail({
+      guestName: rsvp.name,
+      inviteUrl: `${base}/iv/${token}`,
+      page1PngUrl: `${base}/api/iv/${token}/1.png`,
+      page2PngUrl: `${base}/api/iv/${token}/2.png`,
+      pdfUrl: `${base}/api/iv/${token}/pdf`,
+    });
+
+    const result = await sendEmail({ to: rsvp.email, ...built });
+    if (result.ok) {
+      await col.updateOne(
+        { _id: rsvp._id },
+        { $set: { ivSentAt: new Date(), updatedAt: new Date() } }
+      );
+    }
+    return result;
+  } catch (err) {
+    console.error("[iv] send failed:", err);
+    return { ok: false, error: "Send failed" };
   }
-
-  const base = getSiteUrl();
-  const built = ivInviteEmail({
-    guestName: rsvp.name,
-    inviteUrl: `${base}/iv/${token}`,
-    page1PngUrl: `${base}/api/iv/${token}/1.png`,
-    page2PngUrl: `${base}/api/iv/${token}/2.png`,
-    pdfUrl: `${base}/api/iv/${token}/pdf`,
-  });
-
-  const result = await sendEmail({ to: rsvp.email, ...built });
-  if (result.ok) {
-    await col.updateOne(
-      { _id: rsvp._id },
-      { $set: { ivSentAt: new Date(), updatedAt: new Date() } }
-    );
-  }
-  return result;
 }
