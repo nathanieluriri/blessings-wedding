@@ -35,7 +35,7 @@ function esc(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function layout(heading: string, bodyHtml: string): string {
+function layout(heading: string, bodyHtml: string, footerNote?: string): string {
   return `<!doctype html>
 <html>
   <body style="margin:0;padding:0;background:${CREAM};font-family:${SERIF};color:${INK};">
@@ -56,8 +56,9 @@ function layout(heading: string, bodyHtml: string): string {
           <tr><td style="padding:20px 30px 24px;border-top:1px solid ${CREAM_DEEP};background:${CREAM};text-align:center;">
             <div style="color:${GOLD};font-size:14px;letter-spacing:0.4em;">&middot; &middot; &middot;</div>
             <div style="margin-top:8px;font-family:${SANS};font-size:12px;line-height:1.6;color:${MUTED};">
-              ${esc(COUPLE)} &middot; Wedding Dashboard<br>
-              You're receiving this because you manage the wedding site.
+              ${esc(COUPLE)} &middot; ${
+    footerNote ?? "Wedding Dashboard<br>You're receiving this because you manage the wedding site."
+  }
             </div>
           </td></tr>
         </table>
@@ -176,5 +177,39 @@ export function loginCodeEmail(opts: {
     <p style="${FINE}">If you didn't try to sign in, change your password right away.</p>`
   );
   const text = `Your ${HASHTAG} sign-in code is ${opts.code}. It expires in ${opts.expiresMinutes} minutes.\nSign in: ${opts.loginUrl}\nIf you didn't try to sign in, change your password right away.`;
+  return { subject, html, text };
+}
+
+// ── Guest IV (invitation card) delivery ────────────────────────────────────
+
+export function ivInviteEmail(opts: {
+  guestName: string;
+  inviteUrl: string;
+  page1PngUrl: string;
+  page2PngUrl: string;
+  pdfUrl: string;
+}): BuiltEmail {
+  const firstName = opts.guestName.trim().split(/\s+/)[0] || opts.guestName;
+  const subject = `You're invited — ${COUPLE}'s Wedding`;
+  const card = (src: string, alt: string) =>
+    `<img src="${src}" alt="${esc(alt)}" width="480" style="display:block;width:100%;max-width:480px;margin:0 auto 18px;border-radius:10px;border:1px solid ${BORDER};" />`;
+  const html = layout(
+    `Dear ${esc(firstName)}, you're invited`,
+    `<p style="${P}">With joy in our hearts, here is your personal invitation and access card for our wedding. Please keep it safe and bring it along on the day.</p>
+    ${card(opts.page1PngUrl, "Wedding invitation card")}
+    ${card(opts.page2PngUrl, `Access card for ${opts.guestName}`)}
+    ${button(opts.inviteUrl, "View your invitation")}
+    <p style="${P}">You can also <a href="${opts.pdfUrl}" style="color:${BURGUNDY};">download your copy as a PDF</a> to keep or print.</p>
+    <p style="${FINE}">This invitation is personal to you.</p>`,
+    `${HASHTAG}<br>You're receiving this because you RSVP'd to our wedding.`
+  );
+  const text = `Dear ${firstName},
+
+You're invited to ${COUPLE}'s wedding! Your personal invitation and access card are ready.
+
+View your invitation: ${opts.inviteUrl}
+Download your copy (PDF): ${opts.pdfUrl}
+
+${HASHTAG} — see you there!`;
   return { subject, html, text };
 }
