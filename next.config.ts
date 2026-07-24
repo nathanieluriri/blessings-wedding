@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
     "/api/iv/**": ["./IV/**"],
     "/iv/**": ["./IV/**"],
   },
+  // @resvg/resvg-js ships a native N-API addon selected via optionalDependencies
+  // per-platform; bundling it breaks that resolution, so it must run through
+  // native `require` instead.
+  serverExternalPackages: ["@resvg/resvg-js"],
 };
 
 export default nextConfig;

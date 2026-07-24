@@ -36,6 +36,9 @@ export interface RsvpDoc {
   updatedAt: Date;
   reviewedBy?: string; // email of admin who last changed status
   reviewedAt?: Date;
+  // ── IV (invitation card) delivery ──
+  ivToken?: string; // unguessable public token for /iv/[token]; 32 hex chars
+  ivSentAt?: Date; // set when the IV email was successfully sent
 }
 
 export interface SettingsDoc {
@@ -156,6 +159,9 @@ async function ensureIndexes() {
     .collection<AdminDoc>("admins")
     .createIndex({ email: 1 }, { unique: true });
   await db.collection<RsvpDoc>("rsvps").createIndex({ createdAt: -1 });
+  await db
+    .collection<RsvpDoc>("rsvps")
+    .createIndex({ ivToken: 1 }, { unique: true, sparse: true });
   // TTL indexes: Mongo prunes rows once `expiresAt` passes.
   await db
     .collection<PasswordResetDoc>("passwordResets")
