@@ -44,3 +44,9 @@ next-env.d.ts
 # nested scratch project — separate app, kept out of this repo's git and
 # Tailwind content scan (its scraped research HTML breaks the build)
 /my-clone/
+my-clone
+/TraackAI-Marketing-Website/
+/traackai-glean/
+
+# Windows Explorer folder-metadata artifact
+desktop.ini
