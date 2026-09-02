@@ -74,6 +74,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, removed });
   }
 
+  // ── Delete the responses themselves ─────────────────────────────────────
+  // No soft-delete and no undo. Names are read first purely so the deletion
+  // is auditable in the logs after the rows are gone.
+  if (action === "delete-rsvp") {
+    const doomed = await col
+      .find({ _id: { $in: ids } })
+      .project<{ name: string }>({ name: 1 })
+      .toArray();
+    const result = await col.deleteMany({ _id: { $in: ids } });
+    if (result.deletedCount > 0) {
+      console.warn(
+        `[rsvp] ${admin.email} deleted ${result.deletedCount} RSVP(s): ` +
+          doomed.map((d) => d.name).join(", ")
+      );
+    }
+    return NextResponse.json({ ok: true, deleted: result.deletedCount });
+  }
+
   // ── Resend IVs ──────────────────────────────────────────────────────────
   if (action === "resend-iv") {
     const docs = await col.find({ _id: { $in: ids } }).toArray();

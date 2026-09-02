@@ -89,7 +89,21 @@ const FILTERS: ("all" | RsvpStatus)[] = ["all", ...RSVP_STATUSES];
 type Confirm =
   | { kind: "resend"; rows: RsvpRow[] }
   | { kind: "delete-iv"; rows: RsvpRow[] }
+  | { kind: "delete-rsvp"; rows: RsvpRow[] }
   | { kind: "status"; rows: RsvpRow[]; status: RsvpStatus };
+
+// The two irreversible actions get the destructive AlertDialog; everything
+// else gets the ordinary confirm.
+const isDestructive = (kind?: Confirm["kind"]) =>
+  kind === "delete-iv" || kind === "delete-rsvp";
+
+// Enough names to recognise what is about to be destroyed, without letting the
+// dialog grow without bound.
+function nameList(rows: RsvpRow[], max = 8) {
+  const names = rows.slice(0, max).map((r) => r.name);
+  const rest = rows.length - names.length;
+  return names.join(", ") + (rest > 0 ? `, and ${rest} more` : "");
+}
 
 function formatWhen(iso: string) {
   return new Date(iso).toLocaleString("en-GB", {
@@ -185,6 +199,16 @@ function RowActions({
         >
           View details
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          disabled={pending}
+          className="min-h-10 md:min-h-0"
+          onClick={() => onConfirm({ kind: "delete-rsvp", rows: [row] })}
+        >
+          <Trash2Icon aria-hidden />
+          Delete RSVP
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -278,7 +302,10 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
   // The details dialog and the confirm dialogs are siblings, so the first has
   // to close before the second opens — two stacked modals fight over the focus
   // trap and the confirm ends up unreachable.
-  function openConfirmFromDetail(kind: "resend" | "delete-iv", row: RsvpRow) {
+  function openConfirmFromDetail(
+    kind: "resend" | "delete-iv" | "delete-rsvp",
+    row: RsvpRow
+  ) {
     setDetail(null);
     openConfirm({ kind, rows: [row] });
   }
@@ -299,7 +326,12 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
     setRunning(true);
     try {
       let res: Response;
-      if (kind !== "status" && ids.length === 1) {
+      if (kind === "delete-rsvp" && ids.length === 1) {
+        res = await fetch(`/api/admin/rsvps/${ids[0]}`, { method: "DELETE" });
+      } else if (
+        (kind === "resend" || kind === "delete-iv") &&
+        ids.length === 1
+      ) {
         res = await fetch(`/api/admin/rsvps/${ids[0]}/iv`, {
           method: kind === "resend" ? "POST" : "DELETE",
         });
@@ -340,6 +372,12 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
         parts.push(`${data.skippedNoEmail} without email`);
       if (data.notAttempted) parts.push(`${data.notAttempted} not attempted`);
       return `Resend: ${parts.join(", ")}.`;
+    }
+    if (c.kind === "delete-rsvp") {
+      const deleted = Number(data.deleted ?? 0);
+      return n === 1
+        ? `${c.rows[0].name}'s RSVP deleted.`
+        : `Deleted ${plural(deleted, "RSVP")}.`;
     }
     if (c.kind === "delete-iv") {
       const removed = Number(data.removed ?? 0);
@@ -477,6 +515,17 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
           >
             <Trash2Icon aria-hidden />
             Delete IV
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            disabled={running}
+            onClick={() =>
+              openConfirm({ kind: "delete-rsvp", rows: selectedRows })
+            }
+          >
+            <Trash2Icon aria-hidden />
+            Delete RSVP
           </Button>
           <Button
             size="sm"
@@ -747,13 +796,15 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
       {/* Resend / bulk status confirm. Both put mail in real inboxes, so they
           always ask first. */}
       <Dialog
-        open={confirmOpen && confirm?.kind !== "delete-iv"}
+        open={confirmOpen && !isDestructive(confirm?.kind)}
         onOpenChange={(o) => {
           if (!o && !running) setConfirmOpen(false);
         }}
       >
         <DialogContent>
-          {confirm && confirm.kind !== "delete-iv" && (
+          {/* Discriminated inline rather than via isDestructive() so
+              TypeScript narrows `confirm` and `confirm.status` stays typed. */}
+          {confirm && (confirm.kind === "resend" || confirm.kind === "status") && (
             <>
               <DialogHeader>
                 <DialogTitle>
@@ -812,10 +863,11 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
         </DialogContent>
       </Dialog>
 
-      {/* Deleting an IV invalidates a link that may already be in a guest's
-          inbox, so it gets the destructive treatment. */}
+      {/* Both irreversible actions land here: deleting an IV invalidates a
+          link that may already sit in a guest's inbox, and deleting an RSVP
+          destroys the response outright. */}
       <AlertDialog
-        open={confirmOpen && confirm?.kind === "delete-iv"}
+        open={confirmOpen && isDestructive(confirm?.kind)}
         onOpenChange={(o) => {
           if (!o && !running) setConfirmOpen(false);
         }}
@@ -823,15 +875,33 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirm?.rows.length === 1
-                ? `Delete ${confirm.rows[0].name}'s IV?`
-                : `Delete ${plural(confirm?.rows.length ?? 0, "invitation")}?`}
+              {confirm?.kind === "delete-rsvp"
+                ? confirm.rows.length === 1
+                  ? `Delete ${confirm.rows[0].name}'s RSVP?`
+                  : `Delete ${plural(confirm.rows.length, "RSVP")}?`
+                : confirm?.rows.length === 1
+                  ? `Delete ${confirm.rows[0].name}'s IV?`
+                  : `Delete ${plural(confirm?.rows.length ?? 0, "invitation")}?`}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Their existing invitation link stops working immediately, and any
-              copy already in their inbox will no longer open. They go back into
-              the &ldquo;not sent&rdquo; pool, so sending again mints a brand-new
-              link. This can&rsquo;t be undone.
+              {confirm?.kind === "delete-rsvp" ? (
+                <>
+                  This erases the response itself — name, message, contact
+                  details and invitation — for{" "}
+                  <span className="font-medium text-foreground">
+                    {nameList(confirm.rows)}
+                  </span>
+                  . They leave the guest list entirely, and any invitation link
+                  they hold stops working. There is no undo.
+                </>
+              ) : (
+                <>
+                  Their existing invitation link stops working immediately, and
+                  any copy already in their inbox will no longer open. They go
+                  back into the &ldquo;not sent&rdquo; pool, so sending again
+                  mints a brand-new link. This can&rsquo;t be undone.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -915,13 +985,22 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                   </Button>
                   <Button
                     type="button"
-                    variant="destructive"
+                    variant="outline"
                     className="h-11 sm:h-9"
                     disabled={!detail.hasIv}
                     onClick={() => openConfirmFromDetail("delete-iv", detail)}
                   >
                     <Trash2Icon aria-hidden />
                     Delete IV
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="h-11 sm:h-9"
+                    onClick={() => openConfirmFromDetail("delete-rsvp", detail)}
+                  >
+                    <Trash2Icon aria-hidden />
+                    Delete RSVP
                   </Button>
                 </div>
                 <DialogClose asChild>

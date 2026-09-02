@@ -80,3 +80,35 @@ export async function PATCH(
 
   return NextResponse.json({ ok: true, status: next });
 }
+
+// Permanently removes one guest's response — used to clear out test rows.
+// There is no soft-delete or undo: the row, its IV token and its sent-stamp
+// all go, so any invitation link already issued to that guest stops working.
+// Not root-gated, matching the rest of RSVP triage.
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const admin = await getCurrentAdmin();
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  let _id: ObjectId;
+  try {
+    _id = new ObjectId(id);
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const col = await rsvpsCollection();
+  const doc = await col.findOne({ _id });
+  if (!doc) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  await col.deleteOne({ _id });
+  console.warn(`[rsvp] ${admin.email} deleted RSVP "${doc.name}" (${id})`);
+  return NextResponse.json({ ok: true, name: doc.name });
+}
