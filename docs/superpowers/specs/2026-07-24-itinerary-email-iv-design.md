@@ -1,7 +1,10 @@
 # Design: Itinerary update, required email, and IV invitation emails
 
 Date: 2026-07-24
-Status: Approved approach (A — live PNG endpoint); pending final spec review.
+Status: Shipped.
+Updated 2026-09-02 (commit `352b7be`): the IV card art was replaced with the
+designer's v2 set. Sections 1 and 2 are unchanged; the asset and
+personalization details in section 3 describe v2.
 
 ## Scope
 
@@ -45,25 +48,50 @@ No layout, animation, or copy changes beyond the times.
 
 ### Assets (source of truth: `IV/` folder)
 
-- `IV/W card-01.svg` — page 1, the main invitation. Static, identical for all
-  guests.
-- `IV/W_card-02.svg` — page 2, the access card. Contains
+- `IV/Wedding card v2-01.svg` — page 1, the main invitation. Static, identical
+  for all guests.
+- `IV/Wedding card v2-02-template.svg` — page 2, the access card. Contains
   `<text id="guest-name">` (centered via `text-anchor="middle"` at the card's
   midline); its tspan content is replaced with the guest's name.
-- `IV/W card-02.svg` — designer original with the "NAME OF GUEST" placeholder;
-  kept in the folder but not used by code.
+- `IV/Wedding card v2-02.svg` — the untouched designer export, kept for
+  re-cutting the template. **It carries no name placeholder:** "NAME OF GUEST"
+  ships as outlined vector paths — the second child `<g>` of `<g id="Text">`.
+  The template above is this file with that group deleted, a live
+  `<text id="guest-name">` node in its place, and a `.cls-guest-name` rule added
+  to the `<style>` block. Keeping the export beside the template makes
+  re-cutting from a future export a small diff.
 - `IV/SaolDisplay-Regular/SaolDisplay-Regular.ttf` — font used for the guest
   name; loaded by the SVG→PNG renderer.
 - The `IV/` directory ships with the server bundle (Next
   `outputFileTracingIncludes` if file tracing would otherwise drop it).
 
+### Re-cutting the page-2 template from a new designer export
+
+The name's placement is measured, not eyeballed:
+
+1. Render the export twice — once as-is, once with the outlined name group
+   removed — and pixel-diff the two to get the placeholder's exact ink box.
+2. Calibrate a live `<text>` node in Saol Display until its ink box matches. For
+   v2 the answer is `font-size:10px`, `text-anchor="middle"`,
+   `transform="translate(225.19 218)"`, fill `#1d427f` — at that size the live
+   text reproduces the designer's ink box exactly (same centre, same x-extent).
+
+resvg **drops** text whose `font-family` it cannot match, and
+`defaultFontFamily` does not rescue it — so the guest-name node must name
+`SaolDisplay-Regular` explicitly. Both v2 cards also carry `MuseoSans-100`
+live-text layers that render as nothing for this reason; harmless, because those
+strings are outlined as well.
+
 ### Personalization
 
 `lib/iv/render.ts`:
 
-- `personalizeAccessCard(name)` — reads `W_card-02.svg`, XML-escapes the name,
-  and replaces the `#guest-name` tspan text. Names longer than ~24 characters
-  get a proportionally smaller `font-size` so they never overflow the card.
+- `personalizeAccessCard(name)` — reads `Wedding card v2-02-template.svg`,
+  XML-escapes the name, and replaces the `#guest-name` tspan text. Names longer
+  than ~24 characters get a proportionally smaller `font-size` so they never
+  overflow the card; because `.cls-guest-name` sets the size via the SVG's
+  `<style>` block and CSS beats presentation attributes, that override has to be
+  an inline `style`. An empty name falls back to "Honoured Guest".
 - `renderCardPng(svg, { scale })` — `@resvg/resvg-js` with the Saol Display
   TTF registered; renders at ~3× the 450×324 viewBox for crisp email/download
   output.

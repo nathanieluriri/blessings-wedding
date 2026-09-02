@@ -2,9 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Status:** Completed 2026-07-24. The IV card art was later replaced with the designer's v2 set in commit `352b7be` (2026-09-02); asset names, the page-2 personalization notes and the `lib/iv/render.ts` snippet below have been updated to v2, so this plan still reads true against the current code. Everything else is the plan as executed.
+
 **Goal:** Update itinerary times, make guest email compulsory (removing WhatsApp), and email every approved guest their personalized two-page wedding IV with a view/download page.
 
-**Architecture:** The IV is two SVG cards in the repo-root `IV/` folder; page 2 has an editable `<text id="guest-name">` node. A server-side render library (`lib/iv/render.ts`) personalizes the SVG and rasterizes it with `@resvg/resvg-js` (Saol Display TTF loaded from `IV/`). Token-keyed public endpoints serve live PNGs and a two-page PDF (`pdf-lib`); the email (existing Resend infra) embeds the PNG URLs and links to `/iv/[token]`. Sending is triggered automatically when an admin accepts an RSVP, plus a bulk backlog button in the admin.
+**Architecture:** The IV is two SVG cards in the repo-root `IV/` folder; page 2 is a template carrying an editable `<text id="guest-name">` node. (The designer's own export has no such node — the name ships as outlined paths — so the template is cut by hand from it; see the spec's "Re-cutting the page-2 template" section.) A server-side render library (`lib/iv/render.ts`) personalizes the SVG and rasterizes it with `@resvg/resvg-js` (Saol Display TTF loaded from `IV/`). Token-keyed public endpoints serve live PNGs and a two-page PDF (`pdf-lib`); the email (existing Resend infra) embeds the PNG URLs and links to `/iv/[token]`. Sending is triggered automatically when an admin accepts an RSVP, plus a bulk backlog button in the admin.
 
 **Tech Stack:** Next.js 16.2.4 (App Router), MongoDB, Resend, `@resvg/resvg-js`, `pdf-lib`, Tailwind 4, shadcn-style UI components.
 
@@ -15,11 +17,11 @@
 - No test runner exists in this repo. Verification = `npx tsc --noEmit`, `npm run lint`, `npm run build`, plus a runnable smoke script for the render library and manual browser checks. Do not add a test framework.
 - Itinerary copy (exact): We Do `12:30 pm`, We Drink `2:00 pm`, We Eat `3:00 pm`, We Party `7:00 pm`.
 - Email subject (exact): `You're invited — Blessing & Justice's Wedding`.
-- IV assets (exact paths): `IV/W card-01.svg` (page 1, static), `IV/W_card-02.svg` (page 2, has `<text id="guest-name">`), `IV/SaolDisplay-Regular/SaolDisplay-Regular.ttf`. `IV/W card-02.svg` exists but is NOT used by code.
+- IV assets (exact paths): `IV/Wedding card v2-01.svg` (page 1, static), `IV/Wedding card v2-02-template.svg` (page 2, has `<text id="guest-name">`), `IV/SaolDisplay-Regular/SaolDisplay-Regular.ttf`. `IV/Wedding card v2-02.svg` is the pristine designer export — kept for re-cutting the template, NOT used by code.
 - Card viewBox is `0 0 450 324`; render PNGs at 3× (1350×972).
 - Tokens: `crypto.randomBytes(16).toString("hex")` → 32 lowercase hex chars.
 - Guests must never receive duplicate IVs: every send path checks `ivSentAt`.
-- Windows dev machine: quote all paths; `IV/W card-01.svg` contains a space.
+- Windows dev machine: quote all paths; every `IV/Wedding card v2-*.svg` name contains spaces.
 
 ---
 
@@ -197,12 +199,15 @@ import { Resvg } from "@resvg/resvg-js";
 import { PDFDocument } from "pdf-lib";
 
 // The IV is a two-page card set living in the repo-root IV/ folder:
-// page 1 (W card-01.svg) is the static invitation; page 2 (W_card-02.svg) is
-// the access card whose <text id="guest-name"> is swapped for the guest's
-// name. Saol Display renders that name; other card text is outlined paths.
+// page 1 (Wedding card v2-01.svg) is the static invitation; page 2 is the
+// access card whose <text id="guest-name"> is swapped for the guest's name.
+// Saol Display renders that name; other card text is outlined paths.
+// "Wedding card v2-02.svg" is the untouched designer export; the template
+// beside it is that file with the outlined "NAME OF GUEST" glyphs replaced by
+// the live <text> node, so re-cutting it from a new export stays a small diff.
 const IV_DIR = path.join(process.cwd(), "IV");
-const PAGE1_FILE = path.join(IV_DIR, "W card-01.svg");
-const PAGE2_FILE = path.join(IV_DIR, "W_card-02.svg");
+const PAGE1_FILE = path.join(IV_DIR, "Wedding card v2-01.svg");
+const PAGE2_FILE = path.join(IV_DIR, "Wedding card v2-02-template.svg");
 const FONT_FILE = path.join(
   IV_DIR,
   "SaolDisplay-Regular",
@@ -232,9 +237,9 @@ export async function personalizeAccessCard(
 ): Promise<string> {
   const svg = await fs.readFile(PAGE2_FILE, "utf8");
   const name = guestName.trim() || "Honoured Guest";
-  // .cls-3 sets font-size:10px via the SVG's <style> block, and CSS beats
-  // presentation attributes — an inline style is the only override that
-  // shrinks long names.
+  // .cls-guest-name sets font-size:10px via the SVG's <style> block, and
+  // CSS beats presentation attributes — an inline style is the only override
+  // that shrinks long names.
   const fontSize =
     name.length > 24 ? Math.max(6, Math.round((10 * 24 * 10) / name.length) / 10) : 10;
   const personalized = svg.replace(
