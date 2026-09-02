@@ -22,6 +22,9 @@ export default async function RsvpsPage() {
     reviewedBy: d.reviewedBy,
     reviewedAt: d.reviewedAt?.toISOString(),
     ivSentAt: d.ivSentAt?.toISOString(),
+    // A token can exist without a send having succeeded (mint happens first),
+    // so "has an IV to delete" is broader than "IV sent".
+    hasIv: Boolean(d.ivToken || d.ivSentAt),
   }));
 
   const pendingIvCount = docs.filter(

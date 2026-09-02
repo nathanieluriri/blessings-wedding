@@ -9,13 +9,21 @@ import { getSiteUrl } from "@/lib/site-url";
  * Sends the guest their IV email, minting the public token on first use and
  * stamping `ivSentAt` on success. Never throws — mirrors sendEmail's contract
  * so callers in request paths can't be broken by delivery failures.
+ *
+ * `force` is the admin-initiated resend: it skips the already-sent guard and
+ * re-stamps `ivSentAt` with the new delivery time. Automatic paths (auto-send
+ * on accept, the bulk backlog run) must never pass it, or a guest could be
+ * mailed twice.
  */
-export async function sendIvEmail(rsvp: {
-  _id: ObjectId;
-  name: string;
-  email: string;
-  ivToken?: string;
-}): Promise<{ ok: boolean; error?: string }> {
+export async function sendIvEmail(
+  rsvp: {
+    _id: ObjectId;
+    name: string;
+    email: string;
+    ivToken?: string;
+  },
+  opts: { force?: boolean } = {}
+): Promise<{ ok: boolean; error?: string }> {
   try {
     const col = await rsvpsCollection();
 
@@ -26,7 +34,7 @@ export async function sendIvEmail(rsvp: {
       return { ok: false, error: "RSVP not found" };
     }
     // Idempotent duplicate-guard: if it's already been sent, don't send again.
-    if (current.ivSentAt) {
+    if (current.ivSentAt && !opts.force) {
       return { ok: true };
     }
 
@@ -72,4 +80,28 @@ export async function sendIvEmail(rsvp: {
     console.error("[iv] send failed:", err);
     return { ok: false, error: "Send failed" };
   }
+}
+
+/**
+ * Destroys the IV for one or more guests: drops `ivToken` (so any link already
+ * in a guest's inbox stops resolving) and `ivSentAt` (so the row re-enters the
+ * bulk-send pool and a fresh, different token is minted next time).
+ *
+ * Sits beside sendIvEmail because these are the two fields it owns.
+ * Returns how many rows actually had an IV to destroy.
+ */
+export async function revokeIvs(ids: ObjectId[]): Promise<number> {
+  if (ids.length === 0) return 0;
+  const col = await rsvpsCollection();
+  const result = await col.updateMany(
+    {
+      _id: { $in: ids },
+      $or: [{ ivToken: { $exists: true } }, { ivSentAt: { $exists: true } }],
+    },
+    {
+      $unset: { ivToken: "", ivSentAt: "" },
+      $set: { updatedAt: new Date() },
+    }
+  );
+  return result.modifiedCount;
 }
