@@ -40,7 +40,7 @@ export default function QnA({
       ),
     },
     {
-      q: "What about guests travelling fmo outside Abuja/Nigeria?",
+      q: "What about guests travelling from outside Abuja/Nigeria?",
       
       a: (
         <>
