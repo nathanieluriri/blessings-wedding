@@ -40,6 +40,15 @@ export default function QnA({
       ),
     },
     {
+      q: "What about guests travelling fmo outside Abuja/Nigeria?",
+      
+      a: (
+        <>
+          The Bride & Groom are more than happy to assist with accomodation and other arrangements for guests travelling in for the wedding. If you have questions or would like help making arrangements, please get in touch with us directly and let us know what you would prefer. We'll be happy to help make your stay as comfortable as possible.  
+        </>
+      ),
+    },
+    {
       q: "Whom should I reach with questions?",
       a: (
         <>
