@@ -12,6 +12,7 @@ import {
   Trash2Icon,
   CheckCheckIcon,
   XIcon,
+  DownloadIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/loading-button";
@@ -37,6 +38,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   Dialog,
@@ -119,6 +123,12 @@ function plural(n: number, one: string, many = `${one}s`) {
   return `${n} ${n === 1 ? one : many}`;
 }
 
+// Opens the admin download route in a new tab so the browser's normal save
+// flow handles the file; the route sets Content-Disposition: attachment.
+function downloadIv(id: string, type: "png" | "pdf" | "svg") {
+  window.open(`/api/admin/rsvps/${id}/download?type=${type}`, "_blank");
+}
+
 // Shared row/card action menu. Used by both the desktop table and the mobile
 // card list so transitions, the IV actions and "View details" stay identical
 // everywhere. On mobile the menu opens full-width with large (touch-friendly)
@@ -192,6 +202,35 @@ function RowActions({
           <Trash2Icon aria-hidden />
           Delete IV
         </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger
+            disabled={row.status !== "accepted"}
+            className="min-h-10 md:min-h-0"
+          >
+            <DownloadIcon aria-hidden />
+            Download
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuItem
+              className="min-h-10 md:min-h-0"
+              onClick={() => downloadIv(row.id, "pdf")}
+            >
+              PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="min-h-10 md:min-h-0"
+              onClick={() => downloadIv(row.id, "png")}
+            >
+              PNG
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="min-h-10 md:min-h-0"
+              onClick={() => downloadIv(row.id, "svg")}
+            >
+              SVG
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="min-h-10 md:min-h-0"
@@ -993,6 +1032,36 @@ export default function RsvpsTable({ rows }: { rows: RsvpRow[] }) {
                     <Trash2Icon aria-hidden />
                     Delete IV
                   </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-11 sm:h-9"
+                        disabled={detail.status !== "accepted"}
+                      >
+                        <DownloadIcon aria-hidden />
+                        Download
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem
+                        onClick={() => downloadIv(detail.id, "pdf")}
+                      >
+                        PDF
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => downloadIv(detail.id, "png")}
+                      >
+                        PNG
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => downloadIv(detail.id, "svg")}
+                      >
+                        SVG
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button
                     type="button"
                     variant="destructive"
